@@ -10,9 +10,9 @@ from pathlib import Path
 
 import numpy as np
 
-from .component_classifier_trainer import ComponentClassifierTrainer
-from .classifier_evaluator import ClassifierEvaluator, _roc_auc, _component_included, _f1, _precision, _recall
-from .log_splitter import LogSplitter
+from ..classifier.component_classifier_trainer import ComponentClassifierTrainer
+from ..classifier.classifier_evaluator import ClassifierEvaluator, _component_included, _f1, _precision, _recall
+from ..classifier.log_splitter import LogSplitter
 from ...shared.classifier_model import ComponentInclusionClassifier
 from ...shared.outcome_scorer import compute_outcome_quality
 

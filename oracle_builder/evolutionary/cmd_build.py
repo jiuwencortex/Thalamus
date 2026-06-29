@@ -42,7 +42,7 @@ def cmd_build(args: argparse.Namespace) -> None:
         all_texts = collector.collect(components, example_texts_map)
 
         if all_texts:
-            from .cluster_count_tuner import ClusterCountTuner
+            from ..hyperparameters_tuner.cluster_count_tuner import ClusterCountTuner
             tuner = ClusterCountTuner(max_features=args.max_features)
             result = tuner.tune(all_texts)
             n_clusters = result.best_k
@@ -60,7 +60,7 @@ def cmd_build(args: argparse.Namespace) -> None:
     # ── --use-cluster-lambda: load per-cluster λ from tune results ────────────
     per_cluster_lambda = None
     if getattr(args, "use_cluster_lambda", False):
-        from .lambda_tuner import load_per_cluster_lambda
+        from ..hyperparameters_tuner.clusters_lambda_tuner import load_per_cluster_lambda
         per_cluster_lambda = load_per_cluster_lambda(args.oracle_dir)
         if per_cluster_lambda:
             print(

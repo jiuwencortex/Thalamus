@@ -13,14 +13,13 @@
 #     3. drift_detected AND n_recent_turns > drift_rebuild_min_turns
 from __future__ import annotations
 
-import json
 import logging
-from dataclasses import dataclass
 from pathlib import Path
 
-from .staleness_checker import load_staleness_status
-from ..shared.distribution_monitor import load_drift_status
-from ..shared.turn_logger import TurnLogger
+from .rebuild_recommendation import RebuildRecommendation
+from oracle_builder.rebuild_recommender.staleness_checker import load_staleness_status
+from ...shared.distribution_monitor import load_drift_status
+from ...shared.turn_logger import TurnLogger
 
 logger = logging.getLogger(__name__)
 
@@ -28,16 +27,7 @@ _DEFAULT_NEW_TURNS_THRESHOLD = 200   # retrain classifier after this many new tu
 _DEFAULT_DRIFT_REBUILD_MIN_TURNS = 50  # min recent turns required to trigger drift rebuild
 
 
-@dataclass
-class RebuildRecommendation:
-    """Output of the retraining scheduler."""
-    retrain_classifier: bool
-    retrain_reasons: list[str]
-    rebuild_oracle: bool
-    rebuild_reasons: list[str]
-
-
-class RetrainingScheduler:
+class RebuildRecommendationChecker:
     """Decide whether to retrain the classifier or rebuild the oracle.
 
     Usage::

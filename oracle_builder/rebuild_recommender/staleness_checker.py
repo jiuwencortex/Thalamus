@@ -14,6 +14,8 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .staleness_status import StalenessStatus
+
 logger = logging.getLogger(__name__)
 
 _STALENESS_FILE = "staleness_status.json"
@@ -23,20 +25,6 @@ _PATTERN_MAP = [
     ("scoring_matrix_mem_*.json",   "memory_section"),
     ("scoring_matrix_tool_*.json",  "tool"),
 ]
-
-
-@dataclass
-class StalenessStatus:
-    """Result of a staleness check."""
-    stale: bool
-    oracle_exists: bool
-    oracle_mtime: str                      # ISO timestamp or ""
-    n_oracle_components: int
-    n_current_matrices: int
-    added_components: list[str] = field(default_factory=list)    # in matrices but not oracle
-    removed_components: list[str] = field(default_factory=list)  # in oracle but not matrices
-    updated_components: list[str] = field(default_factory=list)  # matrix newer than oracle
-    message: str = ""
 
 
 class StalenessChecker:
