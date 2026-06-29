@@ -5,10 +5,10 @@ from __future__ import annotations
 import logging
 import sys
 
-from jiuwenswarm.thalamus.oracle_builder.cli_args_parser import make_parser
-from jiuwenswarm.thalamus.oracle_builder.evolutionary.cmd_build import cmd_build
-from jiuwenswarm.thalamus.oracle_builder.classifier.cmd_train_classifier import cmd_train_classifier
-from jiuwenswarm.thalamus.oracle_builder.classifier.model_registry import ModelRegistry
+from oracle_builder.cli_args_parser import make_parser
+from oracle_builder.evolutionary.cmd_build import cmd_build
+from oracle_builder.classifier.cmd_train_classifier import cmd_train_classifier
+from oracle_builder.classifier.model_registry import ModelRegistry
 
 
 def main() -> None:

@@ -14,6 +14,6 @@
 
 #python -m jiuwenswarm.tools.component_scoring build --type tools --tools-dir C:\Workspace\openjiuwen\agent-core\openjiuwen\harness\tools --tools-dir C:\Workspace\openjiuwen\jiuwenswarm\jiuwenswarm\agents\harness\common\tools  --matrix-dir C:\Users\m00645993\.jiuwenswarm\agent\workspace\oracle --model gpt-4o-mini --api-key $KEY
 
-from jiuwenswarm.thalamus.oracle_builder.cli import main
+from oracle_builder.cli import main
 
 main()

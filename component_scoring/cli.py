@@ -10,8 +10,8 @@ import sys
 
 from openjiuwen.core.foundation.llm import Model, ModelClientConfig, ModelRequestConfig
 
-from jiuwenswarm.thalamus.component_scoring.cli_args_parser import make_parser
-from jiuwenswarm.thalamus.component_scoring.cli_builders import build_skills, build_memory, build_tools
+from component_scoring.cli_args_parser import make_parser
+from component_scoring.cli_builders import build_skills, build_memory, build_tools
 
 
 def _make_model(args: argparse.Namespace) -> tuple[Model, str]:

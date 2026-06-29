@@ -17,6 +17,6 @@
 #       --oracle-dir ~/.jiuwenswarm/oracle \
 #       --embedding ./query.npy --threshold 0.5 --verbose
 
-from jiuwenswarm.thalamus.context_selectors.cli import main
+from context_selectors.cli import main
 
 main()

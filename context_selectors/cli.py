@@ -4,9 +4,9 @@ from __future__ import annotations
 import logging
 import sys
 
-from jiuwenswarm.thalamus.context_selectors.cli_args_parser import make_parser
-from jiuwenswarm.thalamus.context_selectors.cmd_lookup import cmd_lookup
-from jiuwenswarm.thalamus.context_selectors.cmd_classify import cmd_classify
+from context_selectors.cli_args_parser import make_parser
+from context_selectors.cmd_lookup import cmd_lookup
+from context_selectors.cmd_classify import cmd_classify
 
 
 def main() -> None:
