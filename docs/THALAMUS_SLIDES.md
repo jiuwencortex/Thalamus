@@ -151,7 +151,8 @@ STAGE 1: COMPONENT SCORING
       system: component body
       user: query
       → candidate_output
-    Score: F1, Bigram F1, Bag-of-Words, Length Ratio → mean_score
+    Score: F1, Bigram F1, Bag-of-Words, Length Ratio (default)
+           BERTScore and LLM judge available via --metrics → mean_score
   ↓
   Output: scoring_matrix_TYPE_NAME.json  (one file per component)
 
@@ -956,6 +957,19 @@ CLASSIFIER TRAINING  [requires >= 500 logged turns]
   Output: classifier.pkl  (W matrix N×d, bias N-vector, component_names list)
 
 ───────────────────────────────────────────────────────────
+EVALUATION + REGISTRY
+  Input: trained classifier + held-out validation turns (chronological 20%)
+
+  Per-component metrics: precision, recall, F1, AUC
+  Aggregate: macro-F1, mean AUC
+  ↓
+  Promotion gate: macro-F1 improves over current model by ≥ 0.01 ?
+    yes → register as classifier_YYYY-MM-DD_HHMMSS.pkl
+         → write classifier_registry.json (turn count, F1, AUC)
+         → update classifier_current.pkl symlink
+    no  → archive without promoting; previous model stays active
+
+───────────────────────────────────────────────────────────
 QUERY TIME — ClassifierSelector (< 1 ms)
     query_embedding ∈ ℝᵈ
     → pᵢ = σ(Wᵢ · e + bᵢ) for each component i
@@ -972,28 +986,30 @@ QUERY TIME — ClassifierSelector (< 1 ms)
 ```mermaid
 graph LR
     subgraph CT["Classifier Training"]
-        T1["Input: turns_YYYY-WNN.jsonl"]
-        T2["Per-component logistic regression"]
-        T3["Output: classifier.pkl"]
-        T1 --> T2
-        T2 --> T3
+        T1["Input: turns_YYYY-WNN.jsonl"] --> T2["Per-component logistic regression"]
+        T2 --> T3["Output: classifier.pkl"]
+    end
+
+    subgraph EV["Evaluation + Registry"]
+        E1["80/20 train/val split"] --> E2["Per-component<br/>precision/recall/F1/AUC"]
+        E2 --> E3["Promotion gate:<br/>macro-F1 +0.01?"]
+        E3 -->|yes| E4["Register + symlink<br/>classifier_current.pkl"]
+        E3 -->|no| E5["Archive without<br/>promoting"]
     end
 
     subgraph QT["Query Time"]
-        Q1["query embedding"]
-        Q2["per-component probability"]
-        Q3["config + confidence"]
-        Q1 --> Q2
-        Q2 --> Q3
+        Q1["query embedding"] --> Q2["per-component probability"]
+        Q2 --> Q3["config + confidence"]
     end
 
-    T3 -.-> Q1
+    T3 --> E1
+    E4 -.-> Q1
 
     classDef training fill:#fff3e0
-    classDef output fill:#e8f5e9
+    classDef eval fill:#e8f5e9
     classDef query fill:#e1f5fe
-    class T1,T2 training
-    class T3 output
+    class T1,T2,T3 training
+    class E1,E2,E3,E4,E5 eval
     class Q1,Q2,Q3 query
 ```
 
@@ -1472,9 +1488,17 @@ context_configs.pkl    [fitted clusterer for query time prediction]
 PATH B — CLASSIFIER PATH:
 
 agent runs → outcome observed → logged to turns_YYYY-WNN.jsonl
-                                ↓ (classifier training on raw logs)
-                            classifier.pkl  [W, b, component names]
-                                 ↑ reads embedding + config + outcome from raw logs
+                                 ↓ (classifier training on raw logs)
+                             classifier.pkl  [W, b, component names]
+                                 ↓ (80/20 evaluation + promotion gate)
+                             classifier_current.pkl  [active model symlink]
+                                  ↑ reads embedding + config + outcome from raw logs
+
+MONITORING:
+
+  query embeddings over time  →  distribution_monitor  →  drift_status.json
+  component sources (skills/memory/tools)  →  staleness_checker  →  staleness_status.json
+  drift_status + staleness_status  →  retraining_scheduler  →  rebuild recommendation
 
 QUERY TIME (two selectors):
 
@@ -1512,13 +1536,21 @@ graph TD
     subgraph "Path B — Classifier Path"
         PB_AGENT["agent runs"] -->|outcome observed| PB_LOG["turns_YYYY-WNN.jsonl"]
         PB_LOG -->|train| PB_CLS["classifier.pkl<br/>[W, b, names]"]
+        PB_CLS -->|evaluate + promote| PB_CUR["classifier_current.pkl<br/>[active model]"]
+    end
+
+    subgraph "Monitoring"
+        MON_EMB["query embeddings<br/>1-week + 4-week windows"] -->|JS divergence| MON_DRIFT["drift_status.json"]
+        MON_SRC["component sources"] -->|diff| MON_STALE["staleness_status.json"]
+        MON_DRIFT -->|recommend| MON_REC["rebuild / retrain"]
+        MON_STALE --> MON_REC
     end
 
     PB_LOG -.->|Stage 2 enrichment| PA2
 
     subgraph "Query Time"
         PA5 -->|ClusterSelector| QA["query text → cluster → config"]
-        PB_CLS -->|ClassifierSelector| QB["query embedding → probabilities → config"]
+        PB_CUR -->|ClassifierSelector| QB["query embedding → probabilities → config"]
     end
 
     style QA fill:#e1f5fe
