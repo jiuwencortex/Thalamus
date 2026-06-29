@@ -22,8 +22,8 @@ Usage:
     result = selector.select(query_embedding)  # query_embedding: np.ndarray
 """
 
-from .cluster_selector import ClusterSelector
-from .classifier_selector import ClassifierSelector
-from .budget_estimator import BudgetEstimator
+from .by_clusters.cluster_selector import ClusterSelector
+from .by_classifier.classifier_selector import ClassifierSelector
+from .by_clusters.budget_estimator import BudgetEstimator
 
 __all__ = ["ClusterSelector", "ClassifierSelector", "BudgetEstimator"]

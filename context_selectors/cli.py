@@ -4,9 +4,9 @@ from __future__ import annotations
 import logging
 import sys
 
-from context_selectors.cli_args_parser import make_parser
-from context_selectors.cmd_lookup import cmd_lookup
-from context_selectors.cmd_classify import cmd_classify
+from .cli_args_parser import make_parser
+from .by_clusters.cmd_lookup import cmd_lookup
+from .by_classifier.cmd_classify import cmd_classify
 
 
 def main() -> None:

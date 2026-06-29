@@ -8,29 +8,11 @@ from pathlib import Path
 
 import numpy as np
 
-from ..shared.classifier_model import ComponentInclusionClassifier
+from ...shared.classifier_model import ComponentInclusionClassifier
 
 logger = logging.getLogger(__name__)
 
 _THRESHOLDS_FILE = "classifier_thresholds.json"
-
-
-def _load_per_component_thresholds(oracle_dir: Path) -> dict[str, float] | None:
-    """Load per-component thresholds tuned by HyperparameterSearch, or None.
-
-    Returns the ``per_component_thresholds`` dict from
-    ``classifier_thresholds.json``, or None if the file is absent or unreadable.
-    ClassifierSelector falls back to a global threshold when this returns None.
-    """
-    path = oracle_dir / _THRESHOLDS_FILE
-    if not path.exists():
-        return None
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        return data.get("per_component_thresholds") or None
-    except Exception as exc:
-        logger.warning("Could not read %s: %s", path, exc)
-        return None
 
 
 class ClassifierSelector:
@@ -98,7 +80,7 @@ class ClassifierSelector:
             )
 
         classifier = ComponentInclusionClassifier.load(classifier_path)
-        per_component_thresholds = _load_per_component_thresholds(oracle_dir)
+        per_component_thresholds = ClassifierSelector._load_per_component_thresholds(oracle_dir)
 
         if per_component_thresholds:
             logger.info(
@@ -145,7 +127,7 @@ class ClassifierSelector:
             source        str              — always "classifier"
         """
         proba = self._classifier.predict_proba(query_embedding)
-        confidence = _mean_confidence(proba)
+        confidence = self._mean_confidence(proba)
 
         # Build inclusion list respecting per-component thresholds
         included: list[str] = []
@@ -187,9 +169,27 @@ class ClassifierSelector:
     def component_names(self) -> list[str]:
         return self._classifier.component_names
 
+    @staticmethod
+    def _mean_confidence(proba: np.ndarray) -> float:
+        """Return mean max(p, 1-p) — average certainty per component decision."""
+        if len(proba) == 0:
+            return 0.0
+        return float(np.mean(np.maximum(proba, 1 - proba)))
 
-def _mean_confidence(proba: np.ndarray) -> float:
-    """Return mean max(p, 1-p) — average certainty per component decision."""
-    if len(proba) == 0:
-        return 0.0
-    return float(np.mean(np.maximum(proba, 1 - proba)))
+    @staticmethod
+    def _load_per_component_thresholds(oracle_dir: Path) -> dict[str, float] | None:
+        """Load per-component thresholds tuned by HyperparameterSearch, or None.
+
+        Returns the ``per_component_thresholds`` dict from
+        ``classifier_thresholds.json``, or None if the file is absent or unreadable.
+        ClassifierSelector falls back to a global threshold when this returns None.
+        """
+        path = oracle_dir / _THRESHOLDS_FILE
+        if not path.exists():
+            return None
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            return data.get("per_component_thresholds") or None
+        except Exception as exc:
+            logger.warning("Could not read %s: %s", path, exc)
+            return None
