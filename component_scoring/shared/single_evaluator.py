@@ -99,15 +99,6 @@ class SingleEvaluator:
 
         return list(await asyncio.gather(*[eval_one(p) for p in pairs]))
 
-    # Backward-compatible alias
-    async def evaluate_skill(
-        self,
-        skill_body: str,
-        pairs: list[dict],
-        sem: asyncio.Semaphore,
-    ) -> list[dict]:
-        return await self.evaluate_component(skill_body, pairs, sem)
-
     async def evaluate_pair(self, component_body: str, query: str, expected: str) -> dict:
         """Run one (component, query) pair through the LLM and score the result."""
         actual = await self._invoke(component_body, query)
@@ -245,7 +236,3 @@ class SingleEvaluator:
         except Exception as e:
             logger.warning("Execution error: %s", e)
             return ""
-
-
-# Backward-compatible alias
-SingleSkillEvaluator = SingleEvaluator
