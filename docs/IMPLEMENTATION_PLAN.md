@@ -4,6 +4,70 @@ This document identifies what is currently built, what the doc describes as gaps
 
 ---
 
+## Implementation Status
+
+| Step | Title | Status |
+|------|-------|--------|
+| 1 | Better Outcome Labels | ✅ Done |
+| 2 | Evaluation + Model Versioning | ✅ Done |
+| 3 | Hyperparameter Tuning | ✅ Done |
+| 4 | Semantic Scoring | ✅ Done |
+| 5 | Drift Detection + Auto-rebuild Triggers | ✅ Done (5f skipped — see note) |
+| 6 | Cross-Path Learning | ⬜ Not started |
+| 7 | Learned Fitness Function | ⬜ Not started |
+| 8 | Joint Component Modeling | ⬜ Not started |
+
+### Files created or modified per step
+
+**Step 1 — Better Outcome Labels**
+- `shared/outcome_scorer.py` — added `score_from_llm_judge()`, updated `compute_outcome_quality()` priority chain; `OutcomeScorer` now accepts judge config
+- `shared/turn_logger.py` — `update_outcome()` accepts and stores `llm_judge_score`
+- `shared/__init__.py` — exports `score_from_llm_judge`
+- `oracle_builder/cli_args_parser.py` — added `--judge-model`, `--judge-api-key`, `--judge-api-base` to `train-classifier`
+- `component_scoring/cli_args_parser.py` — added `--judge-model`, `--judge-api-key`, `--judge-api-base` to `build`
+
+**Step 2 — Evaluation + Model Versioning**
+- `oracle_builder/classifier/log_splitter.py` — NEW: chronological 80/20 train/val split
+- `oracle_builder/classifier/classifier_evaluator.py` — NEW: per-component precision/recall/F1/AUC, writes `classifier_eval_YYYY-MM-DD.json`
+- `oracle_builder/classifier/model_registry.py` — NEW: versioned classifier storage, promotion gate (macro_F1 must improve ≥0.01), `classifier_current.pkl`, `classifier_registry.json`
+- `oracle_builder/classifier/component_classifier_trainer.py` — added `train_on_turns()`; original `train()` delegates to it
+- `oracle_builder/classifier/cmd_train_classifier.py` — rewritten: full split → train → evaluate → register pipeline; `--force-promote` flag
+- `context_selectors/classifier_selector.py` — `load()` prefers `classifier_current.pkl`; loads per-component thresholds from `classifier_thresholds.json`
+- `oracle_builder/cli_args_parser.py` — added `--force-promote` to `train-classifier`; added `list-versions` subcommand
+- `oracle_builder/cli.py` — added `list-versions` handler
+
+**Step 3 — Hyperparameter Tuning**
+- `oracle_builder/classifier/hyperparameter_search.py` — NEW: grid search over C × threshold; per-component threshold sweep; writes `classifier_thresholds.json`
+- `oracle_builder/evolutionary/cluster_count_tuner.py` — NEW: K in [5,10,15,20,30,50]; elbow + silhouette; writes best K
+- `oracle_builder/evolutionary/lambda_tuner.py` — NEW: per-cluster Spearman correlation → λ; writes `per_cluster_lambda.json`
+- `oracle_builder/evolutionary/config_builder_step06_run_evolutionary_search.py` — accepts `per_cluster_lambda` dict
+- `oracle_builder/evolutionary/config_builder.py` — passes `per_cluster_lambda` through
+- `oracle_builder/evolutionary/cmd_build.py` — rewritten: handles `--auto-k` and `--use-cluster-lambda`
+- `oracle_builder/cli_args_parser.py` — added `--auto-k`, `--use-cluster-lambda`, `--log-dir` to `evolve`; added `tune` subcommand
+- `oracle_builder/cli.py` — added `tune` handler
+
+**Step 4 — Semantic Scoring**
+- `component_scoring/shared/metrics/metric_bert_score.py` — NEW: BERTScore F1, lazy import, graceful fallback
+- `component_scoring/shared/metrics/metric_llm_judge.py` — NEW: LLM judge 1–10 score, normalized to [0,1]
+- `component_scoring/shared/metrics/metrics_list.py` — added `OPTIONAL_METRICS`, `ALL_METRICS`
+- `component_scoring/shared/single_evaluator.py` — rewritten: accepts `metrics`, `judge_*`, `eval_combination_size`; combination leave-one-out scoring
+- `component_scoring/shared/all_items_evaluator.py` — rewritten: passes metric config through; stores `metrics_used` in JSON
+- `component_scoring/skills/composer.py`, `memory/composer.py`, `tools/composer.py` — pass metric config to `AllItemsEvaluator`
+- `component_scoring/cli_builders.py` — rewritten: `_metric_kwargs()` helper; all builders use it
+- `component_scoring/cli_args_parser.py` — added `--metrics`, `--eval-combination-size`
+
+**Step 5 — Drift Detection + Auto-rebuild Triggers**
+- `shared/distribution_monitor.py` — NEW: JS divergence between 1-week and 4-week embedding windows; power-iteration PCA; writes `drift_status.json`
+- `shared/__init__.py` — exports `DistributionMonitor`, `load_drift_status`
+- `oracle_builder/staleness_checker.py` — NEW: diffs oracle component list vs current scoring matrices (added/removed/updated); writes `staleness_status.json`
+- `oracle_builder/retraining_scheduler.py` — NEW: `should_retrain_classifier()` and `should_rebuild_oracle()` logic; reads cached status files
+- `oracle_builder/cli_args_parser.py` — added `status` and `check-rebuild` subcommands
+- `oracle_builder/cli.py` — added `_cmd_status()` and `_cmd_check_rebuild()` handlers
+
+> **Note — 5f not implemented:** The plan described an `--auto-threshold` flag for `train-classifier` that calls `retraining_scheduler.should_retrain_classifier()` before training and skips training if False. This was not built. The `check-rebuild` subcommand covers the same use case for scripted workflows (exit code 2 when rebuild is needed).
+
+---
+
 ## Part 1 — What Is Currently Developed
 
 The following is what exists in code today, as described in the main body of THALAMUS_SLIDES.md (excluding the "Gap to real ML" sections).

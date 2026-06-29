@@ -1,0 +1,15 @@
+# Thalamus — Python dependencies
+#
+# Core (required):
+numpy>=1.24
+scikit-learn>=1.3
+PyYAML>=6.0
+
+# Optional — sentence-transformer clustering backend:
+#   Install to use --embedder sentence in the oracle_builder evolve command.
+#   Default backend is TF-IDF (no extra dependencies).
+# sentence-transformers>=2.2
+
+# Optional — BERTScore semantic evaluation metric:
+#   Install to use --metrics bert_score in the component_scoring build command.
+# bert-score>=0.3
