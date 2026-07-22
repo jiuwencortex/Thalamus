@@ -70,7 +70,7 @@ This document identifies what is currently built, what the doc describes as gaps
 
 ## Part 1 — What Is Currently Developed
 
-The following is what exists in code today, as described in the main body of THALAMUS_SLIDES.md (excluding the "Gap to real ML" sections).
+The following is what exists in code today, as described in the main body of thalamus_slides.md (excluding the "Gap to real ML" sections).
 
 ### Path A — Evolutionary Selector
 
@@ -158,7 +158,7 @@ The following is what exists in code today, as described in the main body of THA
 
 ## Part 2 — Gaps to Real ML
 
-These are extracted from every "Gap to real ML" collapsible section in THALAMUS_SLIDES.md. They are organized by slide.
+These are extracted from every "Gap to real ML" collapsible section in thalamus_slides.md. They are organized by slide.
 
 ### From Slide 9 — Stage 1 Scoring
 1. **Synthetic expected answers** — the query generator covers what the LLM thinks is representative, not the real production distribution

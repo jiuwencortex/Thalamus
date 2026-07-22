@@ -16,7 +16,7 @@ def _cmd_list_versions(args) -> None:
 
     if not versions:
         print("No classifier versions registered yet.")
-        print(f"Run: python -m thalamus.oracle_builder train-classifier --oracle-dir {args.oracle_dir}")
+        print(f"Run: python -m oracle_builder train-classifier --oracle-dir {args.oracle_dir}")
         return
 
     header = f"{'#':<4}  {'filename':<40}  {'trained_at':<22}  {'train':>6}  {'val':>5}  {'F1':>7}  {'AUC':>7}  active"

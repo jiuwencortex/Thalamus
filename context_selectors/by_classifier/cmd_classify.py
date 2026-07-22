@@ -12,7 +12,7 @@ def cmd_classify(args: argparse.Namespace) -> None:
     classifier_path = args.oracle_dir / "classifier.pkl"
     if not classifier_path.exists():
         print(f"ERROR: classifier.pkl not found in {args.oracle_dir}", file=sys.stderr)
-        print("Run: python -m jiuwenswarm.thalamus.oracle_builder train-classifier --oracle-dir ...",
+        print("Run: python -m oracle_builder train-classifier --oracle-dir ...",
               file=sys.stderr)
         sys.exit(1)
 

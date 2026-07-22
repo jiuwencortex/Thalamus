@@ -1,6 +1,6 @@
 # component_scoring/cli.py
 # Unified entry point for building component scoring matrices.
-# Supports: python -m jiuwenswarm.tools.component_scoring build --type skills|memory|tools
+# Supports: python -m component_scoring build --type skills|memory|tools
 from __future__ import annotations
 
 import argparse

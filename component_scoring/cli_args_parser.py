@@ -1,6 +1,6 @@
 # component_scoring/cli.py
 # Unified entry point for building component scoring matrices.
-# Supports: python -m jiuwenswarm.tools.component_scoring build --type skills|memory|tools
+# Supports: python -m component_scoring build --type skills|memory|tools
 from __future__ import annotations
 
 import argparse
@@ -11,7 +11,7 @@ from pathlib import Path
 
 def make_parser():
     p = argparse.ArgumentParser(
-        prog="python -m jiuwenswarm.tools.component_scoring",
+        prog="python -m component_scoring",
         description=(
             "Build recommendation-matrix files for skills, memory sections, and tools.\n\n"
             "Stage 1: LLM reads each component and invents (query, expected_answer) pairs.\n"

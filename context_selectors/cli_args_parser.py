@@ -7,7 +7,7 @@ from pathlib import Path
 
 def make_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        prog="python -m jiuwenswarm.thalamus.context_selectors",
+        prog="python -m context_selectors",
         description=(
             "Runtime context selection tools.\n\n"
             "  lookup   — cluster-based lookup using context_configs.json\n"

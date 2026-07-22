@@ -1,5 +1,5 @@
 # oracle_builder/cli_args_parser.py
-# Entry point: python -m jiuwenswarm.tools.oracle_builder build
+# Entry point: python -m oracle_builder build
 from __future__ import annotations
 
 import argparse
@@ -8,7 +8,7 @@ from pathlib import Path
 
 def make_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        prog="python -m jiuwenswarm.tools.oracle_builder",
+        prog="python -m oracle_builder",
         description=(
             "Build context_configs.json from pre-computed recommendation matrices.\n\n"
             "Reads all scoring_matrix_skill_*.json, scoring_matrix_mem_*.json, and\n"

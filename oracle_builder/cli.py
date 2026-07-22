@@ -1,5 +1,5 @@
 # oracle_builder/cli.py
-# Entry point: python -m jiuwenswarm.tools.oracle_builder build
+# Entry point: python -m oracle_builder build
 from __future__ import annotations
 
 import logging

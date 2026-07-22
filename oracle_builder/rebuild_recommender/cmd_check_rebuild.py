@@ -27,7 +27,7 @@ def _cmd_check_rebuild(args) -> None:
         for reason in rec.retrain_reasons:
             print(f"    • {reason}")
         print(
-            "\n  Run: python -m jiuwenswarm.tools.oracle_builder train-classifier "
+            "\n  Run: python -m oracle_builder train-classifier "
             f"--oracle-dir {args.oracle_dir}"
         )
     else:
@@ -38,7 +38,7 @@ def _cmd_check_rebuild(args) -> None:
         for reason in rec.rebuild_reasons:
             print(f"    • {reason}")
         print(
-            "\n  Run: python -m jiuwenswarm.tools.oracle_builder evolve "
+            "\n  Run: python -m oracle_builder evolve "
             f"--oracle-dir {args.oracle_dir}"
         )
     else:

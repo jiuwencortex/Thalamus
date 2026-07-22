@@ -76,7 +76,7 @@ class ClassifierSelector:
         else:
             raise FileNotFoundError(
                 f"No classifier found in {oracle_dir}. "
-                "Run: python -m thalamus.oracle_builder train-classifier --oracle-dir <dir>"
+                "Run: python -m oracle_builder train-classifier --oracle-dir <dir>"
             )
 
         classifier = ComponentInclusionClassifier.load(classifier_path)

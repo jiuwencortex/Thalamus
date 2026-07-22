@@ -2,7 +2,7 @@
 
   - ScoreEnricher : read interaction_logs turns, update scoring_matrix_*.json
 
-TurnLogger and OutcomeScorer now live in jiuwenswarm.tools.shared
+TurnLogger and OutcomeScorer now live in shared
 (shared between this package and oracle_builder.policy).
 
 Usage:

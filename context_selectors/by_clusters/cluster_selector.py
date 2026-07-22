@@ -43,7 +43,7 @@ class ClusterSelector:
         if not config_path.exists():
             raise FileNotFoundError(
                 f"context_configs.json not found in {oracle_dir}. "
-                "Run: python -m jiuwenswarm.tools.oracle_builder build"
+                "Run: python -m oracle_builder build"
             )
         data = json.loads(config_path.read_text(encoding="utf-8"))
         model_path = config_path.with_suffix(".pkl")
@@ -172,7 +172,7 @@ class ClusterSelector:
             if not self._clusterer_path.exists():
                 raise FileNotFoundError(
                     f"Clusterer model not found: {self._clusterer_path}. "
-                    "Run: python -m jiuwenswarm.tools.oracle_builder build"
+                    "Run: python -m oracle_builder build"
                 )
             self._clusterer = QueryClusterer.load(self._clusterer_path)
         return self._clusterer
