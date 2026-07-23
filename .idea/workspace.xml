@@ -4,24 +4,8 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="525e7547-7e57-4de0-a4ef-216eb3f02bbc" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/future-roadmap.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/runners/run_01_score.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/runners/run_02_oracle.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/runners/run_03_classifier.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/runners/run_04_select.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/runners/run_all.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/ContextPrime.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Thalamus.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/IMPLEMENTATION_PLAN.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/IMPLEMENTATION_PLAN.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/phase-0-rename-restructure.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/phase-1-memory-scoring.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/phase-2-tool-scoring.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/phase-3-evolutionary-search.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/phase-4-online-learning.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/phase-5-gaps-closing.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/phase-6-multi-agent.md" beforeDir="false" />
+    <list default="true" id="525e7547-7e57-4de0-a4ef-216eb3f02bbc" name="Changes" comment="Working on Thalamus">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +38,65 @@
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0000000003593825" />
+      <entry key="MS500" value="1.0219770715732102" />
+      <entry key="S2" value="2.419279176823231" />
+      <entry key="S5" value="5.1197081494589485" />
+      <entry key="S10" value="7.044036624423274" />
+      <entry key="S30" value="8.868296584302247" />
+      <entry key="S60" value="9.413389846063344" />
+      <entry key="M2" value="9.701299228804025" />
+      <entry key="M5" value="9.879197352318254" />
+      <entry key="M10" value="9.939375962459795" />
+      <entry key="M15" value="9.959534309353806" />
+      <entry key="M30" value="9.979742278295369" />
+      <entry key="H1" value="9.989864911868448" />
+      <entry key="H2" value="9.994930898090193" />
+      <entry key="H4" value="9.997465059455987" />
+      <entry key="D1" value="9.999577455788856" />
+      <entry key="W1" value="9.999939635215727" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="0.0" />
+      <entry key="M10" value="0.0" />
+      <entry key="M15" value="0.0" />
+      <entry key="M30" value="0.0" />
+      <entry key="H1" value="0.0" />
+      <entry key="H2" value="0.0" />
+      <entry key="H4" value="0.0" />
+      <entry key="D1" value="0.0" />
+      <entry key="W1" value="0.0" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="5.526093761731566E-8" />
+      <entry key="MS500" value="0.05190016419397833" />
+      <entry key="S2" value="1.807507587963571" />
+      <entry key="S5" value="4.796806140533287" />
+      <entry key="S10" value="6.864740976304682" />
+      <entry key="S30" value="8.803910904162354" />
+      <entry key="S60" value="9.38057054712442" />
+      <entry key="M2" value="9.684728933016165" />
+      <entry key="M5" value="9.872530145912144" />
+      <entry key="M10" value="9.93603579942961" />
+      <entry key="M15" value="9.957306072890367" />
+      <entry key="M30" value="9.97862742866343" />
+      <entry key="H1" value="9.9893073040437" />
+      <entry key="H2" value="9.994652048405761" />
+      <entry key="H4" value="9.997325623168273" />
+      <entry key="D1" value="9.999554214817705" />
+      <entry key="W1" value="9.999936315038052" />
+    </decayedShown>
   </component>
   <component name="ProjectColorInfo"><![CDATA[{
   "associatedIndex": 4,
@@ -102,11 +145,24 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1784792394405</updated>
-      <workItem from="1784792395414" duration="879000" />
+      <workItem from="1784792395414" duration="1128000" />
     </task>
+    <task id="LOCAL-00001" summary="Working on Thalamus">
+      <option name="closed" value="true" />
+      <created>1784793295322</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1784793295322</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Working on Thalamus" />
+    <option name="LAST_COMMIT_MESSAGE" value="Working on Thalamus" />
   </component>
 </project>
