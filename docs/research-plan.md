@@ -170,6 +170,30 @@ tasks, `tfidf-top-k` is competitive.
 efficiency). Minimal novelty required at this stage — the contribution is the problem
 formulation + evaluation protocol.
 
+**Implementation status: ✓ COMPLETE**
+
+The following artifacts have been implemented under `thalamus/research/`:
+
+| Artifact | Location | Notes |
+|---|---|---|
+| `SelectorProtocol` | `baselines/protocol.py` | `@runtime_checkable` Protocol; all baselines + `ContextSelector` satisfy it |
+| `ComponentCatalog` | `baselines/component_catalog.py` | Loads all scoring matrices; derives per-budget `k` from `context_configs.json` |
+| `AllSelector` | `baselines/all_selector.py` | Returns all components; quality upper bound |
+| `RandomSelector` | `baselines/random_selector.py` | Seeded random sample of `k` components |
+| `TFIDFSelector` | `baselines/tfidf_selector.py` | `TfidfVectorizer(ngram_range=(1,2), sublinear_tf=True)` + cosine similarity |
+| `BM25Selector` | `baselines/bm25_selector.py` | Full Okapi BM25 from scratch (k1=1.5, b=0.75) — no external dependencies |
+| `DenseSelector` | `baselines/dense_selector.py` | Sentence-transformer L2-normalized cosine; lazy import (`pip install thalamus[sentence]`) |
+| `EvalRun` schema | `evaluation/result_schema.py` | `QueryResult`, `OverlapStats`, `AggregateStats`, `SelectorResult`, `EvalRun`; `quality=null` placeholder |
+| `OverlapStats` | `evaluation/overlap_stats.py` | Jaccard, precision, recall per query; means over task suite |
+| `BenchmarkRunner` | `evaluation/benchmark_runner.py` | Median latency over `n_repeats`; overlap vs reference selector; writes `EvalRun` JSON |
+| ASCII report | `evaluation/report.py` | Comparison table: selector × {mean_ms, p95_ms, mean_n, jaccard, precision, recall, quality} |
+| `thalamus-research` CLI | `research/cli.py`, `cli_args_parser.py` | `baseline-lookup` (single/multi selector comparison) + `eval` (full benchmark run) |
+
+**Remaining before R1 results are reportable:**
+1. Run `thalamus-research eval` on the 120-task jiuwenswarm suite to generate `EvalRun` JSON files.
+2. Execute the jiuwenswarm quality measurement pass to fill in `quality` fields.
+3. Produce the comparison table and write the R1 findings section.
+
 ---
 
 ### Phase R2 — Ablation Study: Isolating What Works

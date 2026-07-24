@@ -2021,7 +2021,49 @@ What remains to move THALAMUS from a well-engineered MLOps system toward full Au
 
 ---
 
-## Slide 43 — Summary
+## Slide 43 — Research Package
+
+The `research/` subpackage is THALAMUS's scientific layer. It is never loaded at query time and has no impact on production latency. Its purpose is to evaluate how well THALAMUS performs versus alternative selection strategies — and to generate the data needed to publish that evaluation.
+
+**Package structure:**
+
+```
+thalamus/research/
+├── baselines/        Five alternative selectors (SelectorProtocol-compatible)
+│   ├── AllSelector         — include everything (quality upper bound)
+│   ├── RandomSelector      — seeded random sample (chance baseline)
+│   ├── TFIDFSelector       — TF-IDF cosine similarity, no training
+│   ├── BM25Selector        — Okapi BM25, no external dependencies
+│   └── DenseSelector       — sentence-transformer (optional install)
+├── evaluation/       Benchmark harness
+│   ├── BenchmarkRunner     — runs selector suite, records latency + overlap
+│   ├── EvalRun             — typed result schema with quality placeholder
+│   ├── OverlapStats        — Jaccard / precision / recall vs reference
+│   └── report              — ASCII comparison table
+├── cross_path/       R3a — classifier weights → GA fitness   [planned]
+├── bandit/           R3b — off-policy exploration rate bound  [planned]
+├── set_quality/      R4  — XGB/joint set-level quality model  [planned]
+└── meta_learning/    R5  — cross-deployment warm-start        [planned]
+```
+
+**CLI:**
+
+```
+thalamus-research baseline-lookup --oracle-dir /oracle \
+    --query "Set up a CI pipeline" --method tfidf bm25 thalamus
+
+thalamus-research eval --oracle-dir /oracle \
+    --query-file tasks.jsonl --reference thalamus \
+    --method all random tfidf bm25 --out results/run_01.json
+```
+
+**Workflow:** The evaluation harness compares THALAMUS against baselines on a fixed task suite, measures latency and component overlap, and writes a structured `EvalRun` JSON file. Quality scores (`quality=null` in the JSON) are filled in by a separate jiuwenswarm pass that runs each context config through the real agent. The resulting table supports all six research contributions: C1 (GA beats top-k), C2 (cold-start sample complexity), C3 (dual-path beats either alone), C4 (off-policy exploration prevents bias), C5 (bookend ordering), C6 (budget adaptation).
+
+**Separation principle:** `thalamus-research` is a separate CLI entry point from `thalamus-select`. Research imports live entirely under `research/`. The four production packages (`component_scoring/`, `oracle_builder/`, `context_selectors/`, `shared/`) have no dependency on `research/`.
+
+---
+
+## Slide 44 — Summary
 
 **The problem:** uniform context inclusion causes Context Saturation as the component library grows. Quality degrades, token costs scale with library size, and attention is diluted by irrelevant content.
 

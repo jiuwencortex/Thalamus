@@ -385,7 +385,7 @@ After each selection, the runtime logs the turn: the query embedding and selecte
 
 ### 9.1 Package Structure
 
-The implementation is organized into four packages with strict boundary separation: no package imports from another package except through the shared utilities layer.
+The implementation is organized into five packages. The four production packages maintain strict boundary separation — no package imports from another except through the shared utilities layer. The fifth package, `research/`, is an optional add-on that reads production artifacts for evaluation and experimentation; it has no production dependencies and is not loaded at query time.
 
 ```mermaid
 graph TD
@@ -402,11 +402,20 @@ graph TD
         SH[shared\nTurnLogger · OutcomeScorer\nQueryClusterer · ComponentInclusionClassifier\nbookend_order]
     end
 
+    subgraph ResearchPkg ["Research (Optional — thalamus-research CLI)"]
+        RS[research/baselines\nAllSelector · RandomSelector\nTFIDFSelector · BM25Selector · DenseSelector]
+        RE[research/evaluation\nBenchmarkRunner · EvalRun\nOverlapStats · report]
+        RFuture[research/cross_path · bandit\nset_quality · meta_learning\n— planned phases R3–R5 —]
+    end
+
     CS -->|scoring_matrix_*.json| OB
     OB -->|context_configs.json\ncontext_configs.pkl\nclassifier.pkl| CTX
     OB --> SH
     CTX --> SH
     CS --> SH
+    RS -.->|reads scoring matrices| CS
+    RE -.->|wraps selectors for benchmarking| CTX
+    RS -.->|compared against| CTX
 ```
 
 **`component_scoring/`** handles Phases 1 and 2. It scans component sources, runs LLM evaluation, and writes scoring matrices. It also provides the `enrich` build type that blends real turn data into existing matrices. It has no dependency on `oracle_builder` or `context_selectors`.
@@ -416,6 +425,8 @@ graph TD
 **`context_selectors/`** handles runtime inference. It loads the artifacts produced by `oracle_builder` and provides `ContextSelector` (the unified entry point: attempts Path B classifier first, falls back to Path A cluster lookup, returns `None` if neither is available), `ClusterSelector` (with relevance ordering, bookend ordering, and auto-budget support), `ClassifierSelector`, and `BudgetEstimator`. It has no dependency on `oracle_builder` or `component_scoring`.
 
 **`shared/`** contains utilities used by more than one package: `TurnLogger` (with off-policy exploration), `OutcomeScorer`, `QueryClusterer` (dual TF-IDF / sentence-transformer backend), `ComponentInclusionClassifier`, and `bookend_order`. It has no dependencies on other packages in the system.
+
+**`research/`** is the research add-on package. It is never loaded at query time and has no impact on production latency. It contains: `baselines/` — five alternative context selectors (`AllSelector`, `RandomSelector`, `TFIDFSelector`, `BM25Selector`, `DenseSelector`) that all implement `SelectorProtocol`, making them drop-in substitutes for `ContextSelector` in experiments; `evaluation/` — a `BenchmarkRunner` that runs any set of selectors over a query suite, records median latency, Jaccard/precision/recall overlap against a reference selector, and writes structured `EvalRun` JSON for downstream quality measurement; and placeholder subpackages for planned research phases R3–R5 (`cross_path/`, `bandit/`, `set_quality/`, `meta_learning/`). The separate `thalamus-research` CLI entry point (`thalamus-research baseline-lookup`, `thalamus-research eval`) keeps research operations cleanly separated from the production `thalamus-select` entry point.
 
 ### 9.2 Offline Lifecycle
 
