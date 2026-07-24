@@ -231,6 +231,26 @@ Measure quality degradation from removing each component.
 **Publication target:** Extended version of R1 paper. Or standalone workshop paper
 (NeurIPS/ICLR Efficient ML track, LLM Agents workshop).
 
+**Implementation status: ✓ COMPLETE (query-time ablation selectors)**
+
+| Ablation | Class | Location | Note |
+|---|---|---|---|
+| No GA (top-k scoring) | `TopKSelector` | `ablations/topk_selector.py` | Ranks by `mean_score × tfidf_cosine`; no combinatorial search |
+| GA single-budget (fixed medium) | `SingleBudgetSelector` | `ablations/single_budget_selector.py` | Ignores budget arg; always uses `budget="medium"` |
+| No bookend (relevance order) | `NoBookendSelector` | `ablations/no_bookend_selector.py` | Forces `ordering="relevance"` |
+| Path B only from turn 1 | `PathBOnlySelector` | `ablations/path_b_only_selector.py` | No Path A fallback; returns None at cold start |
+
+Build-time ablation variants (require a separate oracle directory):
+- **No enrichment**: re-run `thalamus-score --type all` without the `enrich` step, store in separate oracle dir, evaluate with `ContextSelector.load(no_enrich_dir)`.
+- **No exploration (ε=0)**: filter turn logs to `exploration.explored=false` before training classifier.  See `research/bandit/` for the exploration-rate analysis that quantifies what this loses.
+
+CLI: `thalamus-research ablation --oracle-dir /oracle --query-file tasks.jsonl --out ablation.json`
+
+**Remaining before R2 results are reportable:**
+1. Run `thalamus-research ablation` on the 120-task suite to generate EvalRun JSONs.
+2. Execute jiuwenswarm quality measurement pass to fill in `quality` fields.
+3. Produce comparison table (ablation variants × task categories) and write R2 findings.
+
 ---
 
 ### Phase R3 — Novel Contributions: Cross-Path Learning and Bandit Formalization
@@ -259,6 +279,28 @@ without requiring real data.
 - Triggered automatically by `check-rebuild` when both classifier and updated component
   scores are available.
 
+**Implementation status: ✓ COMPLETE (analysis tools)**
+
+| Artifact | Class / Function | Location |
+|---|---|---|
+| Co-inclusion extraction | `CoInclusionExtractor` | `cross_path/co_inclusion_extractor.py` |
+| Per-component pair analysis | `ComponentPair` | same |
+| GA fitness augmentation | `FitnessAugmentor` | `cross_path/fitness_augmentor.py` |
+| Convenience wrapper | `augment_fitness_config()` | same |
+| CLI handler | `cmd_cross_path.run()` | `cross_path/cmd_cross_path.py` |
+
+CLI:
+```
+# Inspect co-inclusion signal
+thalamus-research cross-path --oracle-dir /oracle --top-pairs 20
+
+# Produce augmented context_configs.json
+thalamus-research cross-path --oracle-dir /oracle --augment-configs --lam 0.2 --out augmented.json
+```
+
+**Remaining:** Wire `--use-classifier-prior` flag into `oracle_builder evolve` to use
+`FitnessAugmentor` during the GA build step (oracle_builder change, not research package).
+
 #### R3b — Contextual Bandit Formalization
 
 **Claim:** Context component selection is a multi-label contextual bandit problem.
@@ -279,6 +321,35 @@ this bias and bound the regret of the dual-path system under the exploration rat
 - `exploration_rate` auto-tuning: `thalamus-oracle tune --auto-exploration` that
   estimates the optimal ε from the divergence between Path A's action distribution and
   the full component space.
+
+**Implementation status: ✓ COMPLETE (analysis tools)**
+
+| Artifact | Class | Location |
+|---|---|---|
+| ε* derivation | `ExplorationRateEstimator` | `bandit/exploration_rate.py` |
+| Per-component coverage | `ComponentCoverage`, `ExplorationRateResult` | same |
+| Convergence measurement | `ConvergenceAnalyzer` | `bandit/convergence.py` |
+| Convergence curve | `ConvergenceResult`, `ConvergencePoint` | same |
+| CLI handler | `cmd_bandit.run()` | `bandit/cmd_bandit.py` |
+
+**ε* formula** (derived in `exploration_rate.py`):
+
+    ε* = max_i { max(0, (n_min/T_target - p_A(c_i)) / (0.5 - p_A(c_i))) }
+
+where `p_A(c_i)` = fraction of clusters where Path A includes c_i.
+
+CLI:
+```
+# Derive minimum exploration rate
+thalamus-research bandit --oracle-dir /oracle --subcommand estimate-rate --n-min 10 --T-target 500
+
+# Measure Path B convergence to Path A over turn history
+thalamus-research bandit --oracle-dir /oracle --subcommand convergence --turn-log-dir /logs
+```
+
+**Remaining:** Wire estimated ε* into `TurnLogger`'s exploration rate parameter
+(`oracle_builder tune --auto-exploration`).  Empirically validate the derivation
+by sweeping ε ∈ {0, 0.05, 0.1, 0.2} on the jiuwenswarm task suite.
 
 **Publication target:** R3 is the primary research contribution. Target: ICLR (main
 track, LLM agents / RL for NLP), NeurIPS (Efficient Agents workshop), or ICML.

@@ -405,7 +405,10 @@ graph TD
     subgraph ResearchPkg ["Research (Optional — thalamus-research CLI)"]
         RS[research/baselines\nAllSelector · RandomSelector\nTFIDFSelector · BM25Selector · DenseSelector]
         RE[research/evaluation\nBenchmarkRunner · EvalRun\nOverlapStats · report]
-        RFuture[research/cross_path · bandit\nset_quality · meta_learning\n— planned phases R3–R5 —]
+        RA[research/ablations\nTopKSelector · NoBookendSelector\nSingleBudgetSelector · PathBOnlySelector]
+        RCP[research/cross_path\nCoInclusionExtractor · FitnessAugmentor]
+        RB[research/bandit\nExplorationRateEstimator · ConvergenceAnalyzer]
+        RFuture[research/set_quality · meta_learning\n— planned phases R4–R5 —]
     end
 
     CS -->|scoring_matrix_*.json| OB
@@ -426,7 +429,16 @@ graph TD
 
 **`shared/`** contains utilities used by more than one package: `TurnLogger` (with off-policy exploration), `OutcomeScorer`, `QueryClusterer` (dual TF-IDF / sentence-transformer backend), `ComponentInclusionClassifier`, and `bookend_order`. It has no dependencies on other packages in the system.
 
-**`research/`** is the research add-on package. It is never loaded at query time and has no impact on production latency. It contains: `baselines/` — five alternative context selectors (`AllSelector`, `RandomSelector`, `TFIDFSelector`, `BM25Selector`, `DenseSelector`) that all implement `SelectorProtocol`, making them drop-in substitutes for `ContextSelector` in experiments; `evaluation/` — a `BenchmarkRunner` that runs any set of selectors over a query suite, records median latency, Jaccard/precision/recall overlap against a reference selector, and writes structured `EvalRun` JSON for downstream quality measurement; and placeholder subpackages for planned research phases R3–R5 (`cross_path/`, `bandit/`, `set_quality/`, `meta_learning/`). The separate `thalamus-research` CLI entry point (`thalamus-research baseline-lookup`, `thalamus-research eval`) keeps research operations cleanly separated from the production `thalamus-select` entry point.
+**`research/`** is the research add-on package. It is never loaded at query time and has no impact on production latency. Its subpackages:
+
+- **`baselines/`** — five alternative context selectors (`AllSelector`, `RandomSelector`, `TFIDFSelector`, `BM25Selector`, `DenseSelector`) that all implement `SelectorProtocol`, making them drop-in substitutes for `ContextSelector` in experiments (Phase R1).
+- **`evaluation/`** — a `BenchmarkRunner` that runs any set of selectors over a query suite, records median latency, Jaccard/precision/recall overlap against a reference selector, and writes structured `EvalRun` JSON for downstream quality measurement (Phase R1).
+- **`ablations/`** — four ablation selectors for the R2 isolation study: `TopKSelector` (no GA; greedy quality × relevance), `NoBookendSelector` (GA without bookend ordering), `SingleBudgetSelector` (GA without budget adaptation), `PathBOnlySelector` (Path B with no fallback to Path A). All implement `SelectorProtocol` (Phase R2).
+- **`cross_path/`** — `CoInclusionExtractor` derives pairwise co-inclusion scores from the classifier's weight matrix; `FitnessAugmentor` annotates `context_configs.json` with augmented fitness scores (`fitness_aug = base + λ × co_inclusion(S)`) for cross-path transfer experiments (Phase R3a).
+- **`bandit/`** — `ExplorationRateEstimator` derives the minimum exploration rate ε\* from Path A's action distribution; `ConvergenceAnalyzer` measures Path B → Path A selection agreement over turn history (Phase R3b).
+- **`set_quality/`**, **`meta_learning/`** — placeholders for planned Phases R4–R5.
+
+The `thalamus-research` CLI entry point exposes five subcommands: `baseline-lookup`, `eval`, `ablation`, `cross-path`, `bandit`. All research operations are cleanly separated from the production `thalamus-select` entry point.
 
 ### 9.2 Offline Lifecycle
 

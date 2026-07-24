@@ -5,8 +5,11 @@ All research subcommands live here, separate from the production
 
 Research subcommands
 --------------------
-  baseline-lookup   Run a single query through one or more baseline selectors
-  eval              Benchmark all selectors over a query set, write results JSON
+  baseline-lookup   Run a single query through one or more baseline selectors (R1)
+  eval              Benchmark all selectors over a query set, write results JSON (R1)
+  ablation          Run THALAMUS ablation study (TopK / NoBookend / SingleBudget / PathBOnly) (R2)
+  cross-path        Analyze classifier co-inclusion signal for GA fitness transfer (R3a)
+  bandit            Estimate optimal exploration rate ε* and measure convergence (R3b)
 """
 from __future__ import annotations
 
@@ -20,7 +23,10 @@ def make_parser() -> argparse.ArgumentParser:
         description=(
             "THALAMUS research tools.\n\n"
             "  baseline-lookup — run a query through retrieval baselines (Phase R1)\n"
-            "  eval            — benchmark selectors on a query set, write results JSON (Phase R1)"
+            "  eval            — benchmark selectors on a query set, write results JSON (Phase R1)\n"
+            "  ablation        — run ablation study: TopK/NoBookend/SingleBudget/PathBOnly (Phase R2)\n"
+            "  cross-path      — analyze classifier co-inclusion for GA transfer (Phase R3a)\n"
+            "  bandit          — estimate optimal exploration rate ε* (Phase R3b)"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -126,6 +132,121 @@ def make_parser() -> argparse.ArgumentParser:
     ev.add_argument(
         "--seed", type=int, default=None,
         help="Random seed for the 'random' selector baseline",
+    )
+
+    # ── ablation (Phase R2) ───────────────────────────────────────────────────
+    abl = sub.add_parser(
+        "ablation",
+        help=(
+            "Run R2 ablation study: compare TopK, NoBookend, SingleBudget, PathBOnly "
+            "against full THALAMUS"
+        ),
+    )
+    abl.add_argument(
+        "--oracle-dir", required=True, type=Path,
+        help="Directory containing scoring matrices, context_configs.json, and optionally classifier",
+    )
+    abl.add_argument(
+        "--query", nargs="*", default=None, metavar="QUERY",
+        help="Inline query strings (may be combined with --query-file)",
+    )
+    abl.add_argument(
+        "--query-file", default=None, type=Path,
+        help="JSONL file with one query per line: {\"query\": str} or plain text",
+    )
+    abl.add_argument(
+        "--budget", default="auto", choices=["small", "medium", "large", "auto"],
+        help="Budget tier passed to every selector (default: auto)",
+    )
+    abl.add_argument(
+        "--ordering", default="bookend", choices=["relevance", "bookend", "none"],
+        help="Ordering for GA-based selectors (default: bookend)",
+    )
+    abl.add_argument(
+        "--n-repeats", type=int, default=3,
+        help="Latency measurement repetitions per (query, selector) pair (default: 3)",
+    )
+    abl.add_argument(
+        "--out", default=None,
+        help="Write EvalRun JSON to this path (default: print to stdout)",
+    )
+    abl.add_argument(
+        "--no-report", action="store_true",
+        help="Skip printing the ASCII comparison table",
+    )
+
+    # ── cross-path (Phase R3a) ────────────────────────────────────────────────
+    cp = sub.add_parser(
+        "cross-path",
+        help="Analyze classifier co-inclusion signal for GA fitness transfer (Phase R3a)",
+    )
+    cp.add_argument(
+        "--oracle-dir", required=True, type=Path,
+        help="Directory containing context_configs.json and classifier_current.pkl",
+    )
+    cp.add_argument(
+        "--top-pairs", type=int, default=20,
+        help="Number of top co-inclusion component pairs to report (default: 20)",
+    )
+    cp.add_argument(
+        "--augment-configs", action="store_true",
+        help=(
+            "Produce an augmented context_configs.json with fitness_augmented annotations.  "
+            "Requires both context_configs.json and classifier_current.pkl in --oracle-dir."
+        ),
+    )
+    cp.add_argument(
+        "--lam", type=float, default=0.2,
+        help=(
+            "Co-inclusion interaction weight λ for fitness augmentation.  "
+            "fitness_aug = base_fitness + λ × co_inclusion(S).  Default: 0.2"
+        ),
+    )
+    cp.add_argument(
+        "--out", default=None,
+        help="Write output JSON to this path (default: print to stdout)",
+    )
+
+    # ── bandit (Phase R3b) ────────────────────────────────────────────────────
+    bandit = sub.add_parser(
+        "bandit",
+        help="Estimate optimal exploration rate ε* and measure convergence (Phase R3b)",
+    )
+    bandit.add_argument(
+        "--oracle-dir", required=True, type=Path,
+        help="Directory containing context_configs.json (for Path A action distribution)",
+    )
+    bandit.add_argument(
+        "--turn-log-dir", default=None, type=Path,
+        help="Directory containing turns_YYYY-WNN.jsonl files (default: oracle-dir)",
+    )
+    bandit.add_argument(
+        "--subcommand", choices=["estimate-rate", "convergence"],
+        default="estimate-rate",
+        help=(
+            "estimate-rate: derive ε* from action distribution divergence (default). "
+            "convergence: measure Path B vs Path A policy similarity over turn history."
+        ),
+    )
+    bandit.add_argument(
+        "--n-min", type=int, default=10, dest="n_min",
+        help="Min samples per class for ε* derivation (estimate-rate only; default: 10)",
+    )
+    bandit.add_argument(
+        "--T-target", type=int, default=500, dest="T_target",
+        help="Target total turns for ε* derivation (estimate-rate only; default: 500)",
+    )
+    bandit.add_argument(
+        "--window-size", type=int, default=50, dest="window_size",
+        help="Rolling window size for convergence analysis (convergence only; default: 50)",
+    )
+    bandit.add_argument(
+        "--budget", default="medium", choices=["small", "medium", "large"],
+        help="Budget tier for Path A reconstruction in convergence analysis (default: medium)",
+    )
+    bandit.add_argument(
+        "--out", default=None,
+        help="Write analysis JSON to this path (default: print to stdout)",
     )
 
     return p

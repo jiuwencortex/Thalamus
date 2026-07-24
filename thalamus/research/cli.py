@@ -32,6 +32,15 @@ def main() -> None:
     elif args.command == "eval":
         from .evaluation.cmd_eval import cmd_eval
         cmd_eval(args)
+    elif args.command == "ablation":
+        from .ablations.cmd_ablation import run
+        run(args)
+    elif args.command == "cross-path":
+        from .cross_path.cmd_cross_path import run
+        run(args)
+    elif args.command == "bandit":
+        from .bandit.cmd_bandit import run
+        run(args)
 
 
 if __name__ == "__main__":
