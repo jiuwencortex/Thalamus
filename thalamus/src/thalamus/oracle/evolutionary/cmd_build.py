@@ -89,3 +89,30 @@ def cmd_build(args: argparse.Namespace) -> None:
         per_cluster_lambda=per_cluster_lambda,
     )
     builder.build(output)
+
+    # ── R3a: --use-classifier-prior: re-rank configs with co-inclusion signal ─
+    if getattr(args, "use_classifier_prior", False):
+        try:
+            from thalamus_research.cross_path.fitness_augmentor import augment_fitness_config
+        except ImportError:
+            print(
+                "WARNING: --use-classifier-prior requires thalamus-research. "
+                "Install with: uv pip install -e ./thalamus_research",
+                file=sys.stderr,
+            )
+        else:
+            lam = getattr(args, "prior_lambda", 0.2)
+            print(f"Applying classifier co-inclusion prior (λ={lam}) to re-rank configs...")
+            try:
+                augment_fitness_config(
+                    oracle_dir=str(args.oracle_dir),
+                    lam=lam,
+                    out_path=str(output),
+                )
+                print(f"Classifier prior applied → {output}")
+            except FileNotFoundError as exc:
+                print(
+                    f"WARNING: {exc}  "
+                    "(run: thalamus-oracle train-classifier first)",
+                    file=sys.stderr,
+                )

@@ -127,6 +127,25 @@ def make_parser() -> argparse.ArgumentParser:
         "--log-dir", dest="log_dir", type=Path, default=None,
         help="Directory with turn logs (default: <oracle-dir>/online_logs). Used with --auto-k.",
     )
+    build.add_argument(
+        "--use-classifier-prior", dest="use_classifier_prior", action="store_true",
+        help=(
+            "After the GA, re-rank cluster configs using co-inclusion signal extracted "
+            "from classifier_current.pkl (R3a cross-path transfer).  Components that the "
+            "classifier has learned to include together receive a higher joint fitness, "
+            "surfacing interaction effects the marginal GA score misses.  "
+            "Requires thalamus-research to be installed and a trained classifier in "
+            "--oracle-dir (run: thalamus-oracle train-classifier first)."
+        ),
+    )
+    build.add_argument(
+        "--prior-lambda", dest="prior_lambda", type=float, default=0.2,
+        help=(
+            "Co-inclusion interaction weight λ for --use-classifier-prior.  "
+            "Augmented fitness = base_fitness + λ × mean_pairwise_co_inclusion.  "
+            "Default: 0.2.  At 0.0 reduces to the original fitness."
+        ),
+    )
 
     # Subcommand: train the component inclusion classifier
     train = sub.add_parser(
@@ -227,6 +246,32 @@ def make_parser() -> argparse.ArgumentParser:
     tune.add_argument(
         "--skip-lambda-tune", dest="skip_lambda_tune", action="store_true",
         help="Skip per-cluster λ tuning.",
+    )
+    tune.add_argument(
+        "--auto-exploration", dest="auto_exploration", action="store_true",
+        help=(
+            "Derive the minimum off-policy exploration rate ε* from the oracle "
+            "structure (R3b bandit formalization) and write it to "
+            "exploration_rate.json in --oracle-dir.  ε* is the smallest "
+            "exploration rate that guarantees every component will appear in at "
+            "least --n-min turns (each class) within --T-target total turns.  "
+            "Requires thalamus-research to be installed and context_configs.json "
+            "in --oracle-dir."
+        ),
+    )
+    tune.add_argument(
+        "--n-min", dest="n_min", type=int, default=10,
+        help=(
+            "Minimum turns per class (c_i=True / c_i=False) required for reliable "
+            "classifier training.  Used in ε* derivation (default: 10)."
+        ),
+    )
+    tune.add_argument(
+        "--T-target", dest="T_target", type=int, default=500,
+        help=(
+            "Target total turns at which ε* provides sufficient component coverage.  "
+            "Corresponds to the 'mature' maturity checkpoint (default: 500)."
+        ),
     )
     tune.add_argument(
         "--verbose", action="store_true",

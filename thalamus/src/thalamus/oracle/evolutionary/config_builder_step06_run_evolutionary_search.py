@@ -8,7 +8,7 @@ import numpy as np
 
 from .evolution.evolutionary_search_runner import EvolutionarySearchRunner
 from .evolution.context_genome import ComponentInfo, ContextGenome
-from _shared.query_clusterer import QueryClusterer
+from thalamus._shared.query_clusterer import QueryClusterer
 
 logger = logging.getLogger(__name__)
 

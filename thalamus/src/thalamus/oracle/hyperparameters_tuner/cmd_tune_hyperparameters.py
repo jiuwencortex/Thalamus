@@ -99,3 +99,49 @@ def _cmd_tune(args) -> None:
                 )
     else:
         print("=== Per-cluster λ tuning skipped (--skip-lambda-tune) ===")
+
+    # ── R3b: --auto-exploration: derive minimum off-policy exploration rate ε* ─
+    if getattr(args, "auto_exploration", False):
+        print("=== Exploration rate ε* derivation (R3b) ===")
+        try:
+            from thalamus_research.bandit.exploration_rate import ExplorationRateEstimator
+        except ImportError:
+            print(
+                "  Skipping: thalamus-research not installed. "
+                "Install with: uv pip install -e ./thalamus_research",
+                file=sys.stderr,
+            )
+        else:
+            config_path = args.oracle_dir / "context_configs.json"
+            if not config_path.exists():
+                print(
+                    "  Skipping: context_configs.json not found. "
+                    "Run: thalamus-oracle evolve first.",
+                    file=sys.stderr,
+                )
+            else:
+                import json
+                n_min = getattr(args, "n_min", 10)
+                T_target = getattr(args, "T_target", 500)
+                estimator = ExplorationRateEstimator.load(args.oracle_dir)
+                result = estimator.estimate(n_min=n_min, T_target=T_target)
+
+                print(f"  {result.interpretation}")
+                print(f"  ε* = {result.epsilon_star}  "
+                      f"(n_min={n_min}, T_target={T_target}, "
+                      f"n_components={result.n_components}, "
+                      f"n_clusters={result.n_clusters})")
+                if result.critical_component:
+                    print(f"  Critical component: '{result.critical_component}'  "
+                          f"(Path A coverage: {result.critical_p_path_a * 100:.1f}%)")
+
+                out_path = args.oracle_dir / "exploration_rate.json"
+                out_path.write_text(
+                    json.dumps(result.to_dict(), indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                print(f"  Written → {out_path.name}")
+                print(
+                    f"  Use this value as exploration_rate in TurnLogger.log_turn() "
+                    f"to ensure sufficient off-policy coverage for Path B."
+                )

@@ -279,7 +279,7 @@ without requiring real data.
 - Triggered automatically by `check-rebuild` when both classifier and updated component
   scores are available.
 
-**Implementation status: ✓ COMPLETE (analysis tools)**
+**Implementation status: ✓ COMPLETE**
 
 | Artifact | Class / Function | Location |
 |---|---|---|
@@ -288,6 +288,7 @@ without requiring real data.
 | GA fitness augmentation | `FitnessAugmentor` | `cross_path/fitness_augmentor.py` |
 | Convenience wrapper | `augment_fitness_config()` | same |
 | CLI handler | `cmd_cross_path.run()` | `cross_path/cmd_cross_path.py` |
+| Production flag | `--use-classifier-prior`, `--prior-lambda` | `thalamus/oracle/evolutionary/cmd_build.py` |
 
 CLI:
 ```
@@ -296,10 +297,15 @@ thalamus-research cross-path --oracle-dir /oracle --top-pairs 20
 
 # Produce augmented context_configs.json
 thalamus-research cross-path --oracle-dir /oracle --augment-configs --lam 0.2 --out augmented.json
+
+# Apply during oracle build (production thalamus — requires trained classifier)
+thalamus-oracle evolve --oracle-dir /oracle --use-classifier-prior --prior-lambda 0.2
 ```
 
-**Remaining:** Wire `--use-classifier-prior` flag into `oracle_builder evolve` to use
-`FitnessAugmentor` during the GA build step (oracle_builder change, not research package).
+**Remaining before R3a results are reportable:**
+1. Run jiuwenswarm task suite comparing `path-a-original` vs `path-a-with-classifier-prior`
+   at all three maturity levels (cold/early/mature).
+2. Write R3a findings section (quality delta, which task categories benefit most).
 
 #### R3b — Contextual Bandit Formalization
 
@@ -322,7 +328,7 @@ this bias and bound the regret of the dual-path system under the exploration rat
   estimates the optimal ε from the divergence between Path A's action distribution and
   the full component space.
 
-**Implementation status: ✓ COMPLETE (analysis tools)**
+**Implementation status: ✓ COMPLETE**
 
 | Artifact | Class | Location |
 |---|---|---|
@@ -331,6 +337,7 @@ this bias and bound the regret of the dual-path system under the exploration rat
 | Convergence measurement | `ConvergenceAnalyzer` | `bandit/convergence.py` |
 | Convergence curve | `ConvergenceResult`, `ConvergencePoint` | same |
 | CLI handler | `cmd_bandit.run()` | `bandit/cmd_bandit.py` |
+| Production flag | `--auto-exploration`, `--n-min`, `--T-target` | `thalamus/oracle/hyperparameters_tuner/cmd_tune_hyperparameters.py` |
 
 **ε* formula** (derived in `exploration_rate.py`):
 
@@ -340,16 +347,20 @@ where `p_A(c_i)` = fraction of clusters where Path A includes c_i.
 
 CLI:
 ```
-# Derive minimum exploration rate
+# Derive minimum exploration rate (research package — full per-component breakdown)
 thalamus-research bandit --oracle-dir /oracle --subcommand estimate-rate --n-min 10 --T-target 500
 
 # Measure Path B convergence to Path A over turn history
 thalamus-research bandit --oracle-dir /oracle --subcommand convergence --turn-log-dir /logs
+
+# Derive and persist ε* in one step (production thalamus — writes exploration_rate.json)
+thalamus-oracle tune --oracle-dir /oracle --auto-exploration --n-min 10 --T-target 500
 ```
 
-**Remaining:** Wire estimated ε* into `TurnLogger`'s exploration rate parameter
-(`oracle_builder tune --auto-exploration`).  Empirically validate the derivation
-by sweeping ε ∈ {0, 0.05, 0.1, 0.2} on the jiuwenswarm task suite.
+**Remaining before R3b results are reportable:**
+1. Empirically validate the ε* bound by sweeping ε ∈ {0, 0.05, 0.1, 0.2} on the
+   jiuwenswarm task suite and measuring Path B quality at each level.
+2. Write R3b findings section (does the derived ε* match empirical optimum?).
 
 **Publication target:** R3 is the primary research contribution. Target: ICLR (main
 track, LLM agents / RL for NLP), NeurIPS (Efficient Agents workshop), or ICML.

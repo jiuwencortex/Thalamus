@@ -5,13 +5,13 @@ from __future__ import annotations
 import logging
 import sys
 
-from oracle.cli_args_parser import make_parser
-from oracle.rebuild_recommender.cmd_check_rebuild import _cmd_check_rebuild
-from oracle.cmd_list_versions import _cmd_list_versions
-from oracle.cmd_status import _cmd_status
-from oracle.cmd_tune import _cmd_tune
-from oracle.evolutionary.cmd_build import cmd_build
-from oracle.classifier.cmd_train_classifier import cmd_train_classifier
+from .cli_args_parser import make_parser
+from .rebuild_recommender.cmd_check_rebuild import _cmd_check_rebuild
+from .cmd_list_versions import _cmd_list_versions
+from .cmd_status import _cmd_status
+from .cmd_tune import _cmd_tune
+from .evolutionary.cmd_build import cmd_build
+from .classifier.cmd_train_classifier import cmd_train_classifier
 
 
 def main() -> None:

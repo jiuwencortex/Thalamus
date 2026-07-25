@@ -100,9 +100,19 @@ All scripts read from environment variables. See each script's header for the fu
 CLI equivalents:
 
 ```bash
+# Core pipeline
 thalamus-score  build --type all  --skills-dir ... --matrix-dir ... --model gpt-4o-mini --api-key ...
 thalamus-oracle evolve            --oracle-dir ...
 thalamus-select lookup            --oracle-dir ... --query "..." --budget auto
+
+# Hyperparameter tuning (K, λ, classifier C/threshold)
+thalamus-oracle tune --oracle-dir ...
+
+# R3a — apply classifier co-inclusion prior after the GA (requires trained classifier)
+thalamus-oracle evolve --oracle-dir ... --use-classifier-prior --prior-lambda 0.2
+
+# R3b — derive minimum off-policy exploration rate ε* and write exploration_rate.json
+thalamus-oracle tune   --oracle-dir ... --auto-exploration --n-min 10 --T-target 500
 ```
 
 ---
@@ -204,6 +214,8 @@ After a full run:
   context_configs.pkl            # fitted clusterer
   classifier_current.pkl         # Path B classifier (if trained)
   classifier_registry.json
+  per_cluster_lambda.json        # tuned λ per cluster (written by: tune)
+  exploration_rate.json          # derived ε* per component (written by: tune --auto-exploration)
   online_logs/
     turns_YYYY-WNN.jsonl
 ```
