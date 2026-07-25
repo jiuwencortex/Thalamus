@@ -35,9 +35,13 @@ class ContextConfigBuilder:
         validation_config=None,  # pareto_validator.ValidationConfig | None
         per_cluster_lambda: dict[int, float] | None = None,
         fitness_fn=None,         # callable(component_names, cluster_id) -> float | None  (R4)
+        transfer_priors: dict[str, float] | None = None,  # R5: {name: prior_score} from transfer_priors.json
+        prior_alpha: float = 0.5,                         # R5: blend weight (1.0=full KB, 0.0=ignore priors)
     ):
         self._budgets = budgets
         self._per_cluster_lambda = per_cluster_lambda
+        self._transfer_priors = transfer_priors
+        self._prior_alpha = prior_alpha
 
         # Step classes instantiated with their persistent dependencies
         self._components_loader = ComponentsLoader(oracle_dir)
@@ -65,6 +69,17 @@ class ContextConfigBuilder:
         print(f"Loaded {n_loaded} component(s)")
         if n_skipped:
             logger.warning("%d component(s) had no example queries and will have zero centroid", n_skipped)
+
+        # Step 1b: R5 — blend transfer priors into component mean_scores
+        if self._transfer_priors:
+            α = self._prior_alpha
+            n_blended = 0
+            for comp in components:
+                prior = self._transfer_priors.get(comp.name)
+                if prior is not None:
+                    comp.mean_score = round(α * prior + (1 - α) * comp.mean_score, 4)
+                    n_blended += 1
+            print(f"R5: blended KB priors into {n_blended}/{n_loaded} component(s) (α={α:.2f})")
 
         # Step 2: collect all texts
         all_texts = self._texts_collector.collect(components, example_texts_map)

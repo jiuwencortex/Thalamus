@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import math
 import sys
 import argparse
 
@@ -99,6 +101,28 @@ def cmd_build(args: argparse.Namespace) -> None:
                     file=sys.stderr,
                 )
 
+    # ── R5: auto-load transfer_priors.json if present (written by meta-init) ──
+    transfer_priors: dict[str, float] | None = None
+    prior_alpha = 0.5
+    priors_path = args.oracle_dir / "transfer_priors.json"
+    if priors_path.exists():
+        try:
+            transfer_priors = json.loads(priors_path.read_text(encoding="utf-8"))
+            # Alpha decays as real turns accumulate: α = exp(-n_turns / 200)
+            log_dir = getattr(args, "log_dir", None) or (args.oracle_dir / "online_logs")
+            n_turns = 0
+            if log_dir and log_dir.exists():
+                for f in log_dir.glob("turns_*.jsonl"):
+                    with open(f) as fh:
+                        n_turns += sum(1 for _ in fh)
+            prior_alpha = math.exp(-n_turns / 200.0)
+            print(
+                f"R5: transfer_priors.json found — {len(transfer_priors)} priors, "
+                f"α={prior_alpha:.3f} (n_turns={n_turns})"
+            )
+        except (json.JSONDecodeError, OSError) as exc:
+            print(f"WARNING: could not read transfer_priors.json: {exc}", file=sys.stderr)
+
     builder = ContextConfigBuilder(
         oracle_dir=args.oracle_dir,
         n_clusters=n_clusters,
@@ -113,6 +137,8 @@ def cmd_build(args: argparse.Namespace) -> None:
         validation_config=validation_config,
         per_cluster_lambda=per_cluster_lambda,
         fitness_fn=fitness_fn,
+        transfer_priors=transfer_priors,
+        prior_alpha=prior_alpha,
     )
     builder.build(output)
 

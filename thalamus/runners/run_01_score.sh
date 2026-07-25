@@ -40,17 +40,47 @@ echo "  Oracle dir : $ORACLE_DIR"
 echo "  Model      : $MODEL"
 echo ""
 
+# Score skills and memory sections (always)
 python -m thalamus.scoring build \
-  --type all \
+  --type skills \
   --skills-dir  "$SKILLS_DIR" \
   --project-dir "$PROJECT_DIR" \
-  --tools-dir   "$TOOLS_DIR" \
   --matrix-dir  "$ORACLE_DIR" \
   --model       "$MODEL" \
   --api-key     "$API_KEY" \
   --api-base    "$API_BASE" \
   --n-examples  "$N_EXAMPLES" \
   --parallel    "$PARALLEL"
+
+python -m thalamus.scoring build \
+  --type memory \
+  --project-dir "$PROJECT_DIR" \
+  --matrix-dir  "$ORACLE_DIR" \
+  --model       "$MODEL" \
+  --api-key     "$API_KEY" \
+  --api-base    "$API_BASE" \
+  --n-examples  "$N_EXAMPLES" \
+  --parallel    "$PARALLEL"
+
+# Score tools only if TOOLS_DIR exists and contains Python files
+if [[ -d "$TOOLS_DIR" ]] && compgen -G "$TOOLS_DIR"/**/*.py > /dev/null 2>&1; then
+  echo ""
+  echo "Tools dir found — scoring tool components..."
+  python -m thalamus.scoring build \
+    --type tools \
+    --tools-dir   "$TOOLS_DIR" \
+    --matrix-dir  "$ORACLE_DIR" \
+    --model       "$MODEL" \
+    --api-key     "$API_KEY" \
+    --api-base    "$API_BASE" \
+    --n-examples  "$N_EXAMPLES" \
+    --parallel    "$PARALLEL"
+else
+  echo ""
+  echo "NOTE: No tools dir found at $TOOLS_DIR — skipping tool scoring."
+  echo "      To score tools, create $TOOLS_DIR with Python files containing *Tool classes,"
+  echo "      then re-run this script."
+fi
 
 echo ""
 echo "Done. Scoring matrices written to: $ORACLE_DIR"
