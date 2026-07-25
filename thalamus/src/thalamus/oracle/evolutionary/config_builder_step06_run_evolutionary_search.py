@@ -24,6 +24,7 @@ class EvolutionarySearch:
         lambda_: float,
         budgets: dict[str, int],
         validation_config=None,  # ValidationConfig | None
+        fitness_fn=None,         # callable(component_names, cluster_id) -> float | None  (R4)
     ):
         self._pop_size = population_size
         self._n_gen = n_generations
@@ -31,6 +32,7 @@ class EvolutionarySearch:
         self._lambda = lambda_
         self._budgets = budgets
         self._validation_config = validation_config
+        self._fitness_fn = fitness_fn
 
     def run(
         self,
@@ -76,6 +78,8 @@ class EvolutionarySearch:
                     lambda_=lambda_for_cluster,
                     max_tokens=max_tokens,
                     seed=cluster_id,
+                    fitness_fn=self._fitness_fn,
+                    cluster_id=cluster_id,
                 )
                 pareto = searcher.run(centroid)
 

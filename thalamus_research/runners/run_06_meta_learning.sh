@@ -76,4 +76,9 @@ if [[ "$MODE" == "transfer" || "$MODE" == "both" ]]; then
     echo ""
     echo "Next: run thalamus-oracle evolve on the new deployment."
     echo "The GA will read transfer_priors.json to warm-start fitness scores."
+    echo ""
+    echo "Production shorthand (equivalent to the transfer step above):"
+    echo "  thalamus-oracle meta-init \\"
+    echo "    --oracle-dir \"$NEW_ORACLE_DIR\" \\"
+    echo "    --kb-path \"$KB_PATH\""
 fi

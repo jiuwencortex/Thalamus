@@ -75,5 +75,14 @@ if [[ "$MODE" == "evaluate" || "$MODE" == "both" ]]; then
 fi
 
 echo ""
-echo "Next: to use the model as the GA fitness function, pass SetQualityFitness"
-echo "to the oracle build step (requires thalamus-oracle integration — see docs)."
+echo "── Production integration ──────────────────────────────"
+echo "To use the XGB model as the GA fitness function, re-run the oracle build:"
+echo ""
+echo "  thalamus-oracle evolve \\"
+echo "    --oracle-dir \"$ORACLE_DIR\" \\"
+echo "    --fitness-model xgb \\"
+echo "    --fitness-model-dir \"$MODEL_DIR\""
+echo ""
+echo "This rebuilds context_configs.json with set-level quality fitness (R4)."
+echo "Compare the new configs against the marginal baseline in:"
+echo "  $RESULTS_DIR/r4_set_quality_eval.json"

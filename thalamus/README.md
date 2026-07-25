@@ -94,6 +94,8 @@ bash thalamus/runners/run_all.sh
 | `runners/run_02_oracle.sh` | Phase 3: genetic algorithm builds `context_configs.json` |
 | `runners/run_03_classifier.sh` | Phase 4: trains logistic regression from turn logs |
 | `runners/run_04_select.sh` | Runtime: resolves a single query to a context config |
+| `runners/run_05_r4_activate.sh` | R4: train XGB set-quality model + rebuild oracle (needs ~500 turns) |
+| `runners/run_06_r5_meta_init.sh` | R5: extract KB from mature oracle + warm-start a new deployment |
 
 All scripts read from environment variables. See each script's header for the full list.
 
@@ -113,6 +115,12 @@ thalamus-oracle evolve --oracle-dir ... --use-classifier-prior --prior-lambda 0.
 
 # R3b — derive minimum off-policy exploration rate ε* and write exploration_rate.json
 thalamus-oracle tune   --oracle-dir ... --auto-exploration --n-min 10 --T-target 500
+
+# R4 — rebuild oracle with XGB set-quality fitness (requires trained model in set_quality_model/)
+thalamus-oracle evolve --oracle-dir ... --fitness-model xgb
+
+# R5 — warm-start a new oracle from the cross-deployment knowledge base
+thalamus-oracle meta-init --oracle-dir /new/oracle --kb-path ~/.jiuwenswarm/knowledge_base.json
 ```
 
 ---

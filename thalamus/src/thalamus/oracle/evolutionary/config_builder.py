@@ -34,6 +34,7 @@ class ContextConfigBuilder:
         sentence_model: str = "all-MiniLM-L6-v2",
         validation_config=None,  # pareto_validator.ValidationConfig | None
         per_cluster_lambda: dict[int, float] | None = None,
+        fitness_fn=None,         # callable(component_names, cluster_id) -> float | None  (R4)
     ):
         self._budgets = budgets
         self._per_cluster_lambda = per_cluster_lambda
@@ -47,6 +48,7 @@ class ContextConfigBuilder:
         self._evolutionary_runner = EvolutionarySearch(
             population_size, n_generations, mutation_rate, lambda_,
             self._budgets, validation_config=validation_config,
+            fitness_fn=fitness_fn,
         )
         self._serializer = OutputSerializer()
 
@@ -81,6 +83,7 @@ class ContextConfigBuilder:
         cluster_texts = self._cluster_assigner.assign(components, example_texts_map, clusterer)
 
         # Step 6: run evolutionary search
+        fitness_note = " [XGB set-quality fitness]" if self._evolutionary_runner._fitness_fn else ""
         validation_note = (
             " + LLM Pareto validation" if self._evolutionary_runner._validation_config else ""
         )
@@ -88,7 +91,7 @@ class ContextConfigBuilder:
             f"Running evolutionary search "
             f"({self._evolutionary_runner._n_gen} generations × "
             f"pop={self._evolutionary_runner._pop_size} × "
-            f"{clusterer.n_clusters} clusters){validation_note} ..."
+            f"{clusterer.n_clusters} clusters){fitness_note}{validation_note} ..."
         )
         cluster_results = self._evolutionary_runner.run(
             components, cluster_texts, clusterer,

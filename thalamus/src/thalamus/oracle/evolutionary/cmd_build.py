@@ -74,6 +74,31 @@ def cmd_build(args: argparse.Namespace) -> None:
                 file=sys.stderr,
             )
 
+    # ── R4: --fitness-model xgb: load set-level quality fitness function ───────
+    fitness_fn = None
+    if getattr(args, "fitness_model", "marginal") == "xgb":
+        model_dir = getattr(args, "fitness_model_dir", None) or (args.oracle_dir / "set_quality_model")
+        try:
+            from thalamus_research.set_quality.fitness_function import SetQualityFitness
+            from thalamus_research.baselines.component_catalog import ComponentCatalog
+        except ImportError:
+            print(
+                "WARNING: --fitness-model xgb requires thalamus-research. "
+                "Install with: uv pip install -e ./thalamus_research",
+                file=sys.stderr,
+            )
+        else:
+            try:
+                catalog = ComponentCatalog.load(args.oracle_dir)
+                fitness_fn = SetQualityFitness.load(model_dir=model_dir, catalog=catalog)
+                print(f"R4: XGB set-quality fitness loaded from {model_dir}")
+            except FileNotFoundError as exc:
+                print(
+                    f"WARNING: {exc}  "
+                    "(run: bash thalamus_research/runners/run_05_set_quality.sh first)",
+                    file=sys.stderr,
+                )
+
     builder = ContextConfigBuilder(
         oracle_dir=args.oracle_dir,
         n_clusters=n_clusters,
@@ -87,6 +112,7 @@ def cmd_build(args: argparse.Namespace) -> None:
         sentence_model=getattr(args, "sentence_model", "all-MiniLM-L6-v2"),
         validation_config=validation_config,
         per_cluster_lambda=per_cluster_lambda,
+        fitness_fn=fitness_fn,
     )
     builder.build(output)
 

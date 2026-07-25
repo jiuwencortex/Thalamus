@@ -23,7 +23,8 @@ class EvolutionarySearchRunner:
     """
 
     def __init__(self, components: list[ComponentInfo], population_size: int = 100, n_generations: int = 200,
-                 mutation_rate: float = 0.05, lambda_: float = 0.1, max_tokens: int = 8000, seed: int = 42):
+                 mutation_rate: float = 0.05, lambda_: float = 0.1, max_tokens: int = 8000, seed: int = 42,
+                 fitness_fn=None, cluster_id: int = 0):
         self._components = components
         self._n = len(components)
         self._pop_size = population_size
@@ -32,6 +33,8 @@ class EvolutionarySearchRunner:
         self._lambda = lambda_
         self._max_tokens = max_tokens
         self._rng = np.random.default_rng(seed)
+        self._fitness_fn = fitness_fn       # callable(component_names, cluster_id) -> float | None
+        self._cluster_id = cluster_id
 
     def run(self, query_embedding: np.ndarray) -> list[ContextGenome]:
         """Run the evolutionary loop; return the final Pareto-optimal configurations.
@@ -67,8 +70,20 @@ class EvolutionarySearchRunner:
 
     def _evaluate(self, population: list[ContextGenome], query_embedding: np.ndarray) -> None:
         for genome in population:
-            genome.fitness, genome.context_tokens = compute_fitness(genome, self._components, query_embedding,
-                                                                    self._lambda, self._max_tokens)
+            if self._fitness_fn is not None:
+                # R4: model-based set-level quality replaces marginal sum-of-scores
+                total_tokens = sum(
+                    c.body_tokens for c, b in zip(self._components, genome.bits) if b
+                )
+                names = genome.included_names(self._components)
+                quality = self._fitness_fn(names, self._cluster_id)
+                size_penalty = self._lambda * (total_tokens / max(self._max_tokens, 1))
+                genome.fitness = quality - size_penalty
+                genome.context_tokens = total_tokens
+            else:
+                genome.fitness, genome.context_tokens = compute_fitness(
+                    genome, self._components, query_embedding, self._lambda, self._max_tokens
+                )
 
     def _mutate(self, genome: ContextGenome) -> ContextGenome:
         bits = genome.bits.copy()

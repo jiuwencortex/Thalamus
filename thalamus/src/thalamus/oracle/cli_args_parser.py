@@ -128,6 +128,26 @@ def make_parser() -> argparse.ArgumentParser:
         help="Directory with turn logs (default: <oracle-dir>/online_logs). Used with --auto-k.",
     )
     build.add_argument(
+        "--fitness-model", dest="fitness_model", default="marginal",
+        choices=["marginal", "xgb"],
+        help=(
+            "Fitness function used by the GA.  "
+            "'marginal' (default) uses the linear sum-of-scores heuristic from "
+            "the pre-computed scoring matrices.  "
+            "'xgb' uses a trained GradientBoostingRegressor that captures "
+            "pairwise component interactions (R4 set-level quality model).  "
+            "Requires thalamus-research and a trained model in --fitness-model-dir "
+            "(run: bash thalamus_research/runners/run_05_set_quality.sh first)."
+        ),
+    )
+    build.add_argument(
+        "--fitness-model-dir", dest="fitness_model_dir", type=Path, default=None,
+        help=(
+            "Directory containing the XGB set-quality model (model.pkl + meta.json).  "
+            "Default: <oracle-dir>/set_quality_model.  Only used when --fitness-model=xgb."
+        ),
+    )
+    build.add_argument(
         "--use-classifier-prior", dest="use_classifier_prior", action="store_true",
         help=(
             "After the GA, re-rank cluster configs using co-inclusion signal extracted "
@@ -344,6 +364,37 @@ def make_parser() -> argparse.ArgumentParser:
         ),
     )
     check_p.add_argument(
+        "--verbose", action="store_true",
+        help="Enable debug logging.",
+    )
+
+    # Subcommand: R5 — warm-start a new oracle from the cross-deployment knowledge base
+    meta_init_p = sub.add_parser(
+        "meta-init",
+        help=(
+            "Warm-start a new oracle from the cross-deployment knowledge base (R5).  "
+            "Matches component fingerprints against the KB and writes "
+            "transfer_priors.json to --oracle-dir.  The next 'evolve' run reads "
+            "these priors to seed component fitness scores instead of using flat "
+            "cold-start values."
+        ),
+    )
+    meta_init_p.add_argument(
+        "--oracle-dir", required=True, type=Path,
+        help="New oracle directory to warm-start (must contain context_configs.json).",
+    )
+    meta_init_p.add_argument(
+        "--kb-path", dest="kb_path", required=True, type=Path,
+        help=(
+            "Path to knowledge_base.json produced by the R5 extract step.  "
+            "Run: bash thalamus_research/runners/run_06_meta_learning.sh  first."
+        ),
+    )
+    meta_init_p.add_argument(
+        "--dry-run", dest="dry_run", action="store_true",
+        help="Print the transfer report but do NOT write transfer_priors.json.",
+    )
+    meta_init_p.add_argument(
         "--verbose", action="store_true",
         help="Enable debug logging.",
     )
