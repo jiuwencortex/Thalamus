@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="525e7547-7e57-4de0-a4ef-216eb3f02bbc" name="Changes" comment="Working on Thalamus">
-      <change beforePath="$PROJECT_DIR$/thalamus/runners/run_01_score.sh" beforeDir="false" afterPath="$PROJECT_DIR$/thalamus/runners/run_01_score.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/thalamus/src/thalamus/oracle/evolutionary/cmd_build.py" beforeDir="false" afterPath="$PROJECT_DIR$/thalamus/src/thalamus/oracle/evolutionary/cmd_build.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/thalamus/src/thalamus/oracle/evolutionary/config_builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/thalamus/src/thalamus/oracle/evolutionary/config_builder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/thalamus_research/docs/thalamus_paper.md" beforeDir="false" afterPath="$PROJECT_DIR$/thalamus_research/docs/thalamus_paper.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -207,7 +206,7 @@
       <updated>1784792394405</updated>
       <workItem from="1784792395414" duration="1128000" />
       <workItem from="1784910518479" duration="208000" />
-      <workItem from="1784910885451" duration="6194000" />
+      <workItem from="1784910885451" duration="10239000" />
     </task>
     <task id="LOCAL-00001" summary="Working on Thalamus">
       <option name="closed" value="true" />
@@ -249,7 +248,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784967221542</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Working on Thalamus">
+      <option name="closed" value="true" />
+      <created>1784967735212</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1784967735212</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
