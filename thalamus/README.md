@@ -80,13 +80,24 @@ uv pip install -e ./thalamus
 
 ```bash
 # Full pipeline: score components → build oracle → validate
-OPENAI_API_KEY=sk-...         \
-SKILLS_DIR=/path/to/skills    \
-PROJECT_DIR=/path/to/project  \
-TOOLS_DIR=/path/to/tools      \
-ORACLE_DIR=/path/to/oracle    \
+OPENAI_API_KEY=sk-...                                          \
+SKILLS_DIR=/path/to/skills                                     \
+PROJECT_DIR=/path/to/project                                   \
+AGENT_CORE_DIR=/path/to/openjiuwen/agent-core                  \
+JIUWENSWARM_DIR=/path/to/openjiuwen/jiuwenswarm                \
+ORACLE_DIR=/path/to/oracle                                     \
 bash thalamus/runners/run_all.sh
 ```
+
+**Tool discovery.** `run_01_score.sh` discovers tool directories automatically in this order:
+
+1. `AGENT_CORE_DIR` → `<dir>/openjiuwen/harness/tools` (built-in tools: filesystem, shell, web, browser, multimodal, …)
+2. `JIUWENSWARM_DIR` → `<dir>/jiuwenswarm/agents/harness/code/tools` (project-specific tools)
+3. `TOOLS_DIR` → any extra custom directory
+4. importlib probe — if openjiuwen is pip-installed, location is detected automatically
+5. `pip show openjiuwen` fallback
+
+Set `TOOLS_DIR=none` to skip tool scoring entirely. Without any of these, tools are skipped with an explanatory message.
 
 | Script | What it runs |
 |--------|--------------|

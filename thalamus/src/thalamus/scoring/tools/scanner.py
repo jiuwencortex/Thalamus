@@ -66,8 +66,25 @@ class _ToolClassInfo:
         self.source_lines = source_lines
 
 
+# Entry-point method names that distinguish runnable tools from schema/output/backend classes.
+_ENTRY_POINT_METHODS = {"invoke", "stream", "__call__", "run", "execute"}
+
+
 def _extract_tool_classes(py_path: Path) -> list[_ToolClassInfo]:
-    """Parse a Python file and return info for classes that look like tools."""
+    """Parse a Python file and return info for classes that look like tools.
+
+    A class is accepted when ALL of the following hold:
+      1. Its name contains "Tool" and does not start with "_".
+      2. It defines at least one entry-point method (invoke / stream / __call__ /
+         run / execute) — distinguishing actual runnable tools from schema classes,
+         output types, and backend helpers (e.g. LspToolOutput, CronToolBackend).
+
+    Description resolution (in order):
+      a. Class-level docstring.
+      b. Docstring of the first `invoke` or `__call__` method (many agent-core
+         tools lack a class docstring but document their `invoke` method).
+      c. Class name converted to a readable phrase ("ReadFileTool" → "Read file tool").
+    """
     try:
         source = py_path.read_text(encoding="utf-8")
         tree = ast.parse(source)
@@ -80,19 +97,53 @@ def _extract_tool_classes(py_path: Path) -> list[_ToolClassInfo]:
     for node in ast.walk(tree):
         if not isinstance(node, ast.ClassDef):
             continue
-        # Heuristic: class name contains "Tool" and is not test/internal
         if "Tool" not in node.name or node.name.startswith("_"):
             continue
+
+        # Collect direct child method nodes (not nested classes).
+        method_nodes: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
+        for child in node.body:
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                method_nodes[child.name] = child
+
+        if not set(method_nodes).intersection(_ENTRY_POINT_METHODS):
+            continue
+
+        # Resolve description.
         docstring = ast.get_docstring(node) or ""
         if not docstring.strip():
-            continue
-        # Extract class source lines (approximate — from class def to next top-level node)
+            # Try invoke / __call__ method docstring.
+            for ep in ("invoke", "__call__"):
+                if ep in method_nodes:
+                    docstring = ast.get_docstring(method_nodes[ep]) or ""
+                    if docstring.strip():
+                        break
+        if not docstring.strip():
+            # Last resort: readable class name.
+            docstring = _class_name_to_description(node.name)
+
+        # Extract class source lines (approximate — from class def to next top-level node).
         start_line = node.lineno - 1
         end_line = _find_class_end_line(node, lines)
         class_source = "".join(lines[start_line:end_line])
         results.append(_ToolClassInfo(node.name, docstring, [class_source]))
 
     return results
+
+
+def _class_name_to_description(name: str) -> str:
+    """Convert a CamelCase class name to a readable description.
+
+    Examples:
+        ReadFileTool  → "Read file"
+        WebFetchWebpageTool → "Web fetch webpage"
+    """
+    # Strip trailing "Tool"
+    if name.endswith("Tool"):
+        name = name[:-4]
+    # Insert spaces before uppercase letters that follow lowercase.
+    spaced = re.sub(r"(?<=[a-z])(?=[A-Z])", " ", name)
+    return spaced.strip()
 
 
 def _find_class_end_line(node: ast.ClassDef, lines: list[str]) -> int:
