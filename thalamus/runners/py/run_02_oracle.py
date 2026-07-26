@@ -22,7 +22,7 @@ import sys
 
 
 def main() -> None:
-    oracle_dir    = os.environ.get("ORACLE_DIR",     "~/.jiuwenswarm/agent/workspace/oracle")
+    oracle_dir    = os.path.expanduser(os.environ.get("ORACLE_DIR",     "~/.jiuwenswarm/agent/workspace/oracle"))
     embedder      = os.environ.get("EMBEDDER",       "tfidf")
     n_clusters    = os.environ.get("N_CLUSTERS",     "20")
     auto_k        = os.environ.get("AUTO_K",         "true").lower() == "true"

@@ -118,9 +118,9 @@ def resolve_tool_dirs() -> list[str]:
 # ── Runner ───────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    skills_dir  = os.environ.get("SKILLS_DIR",    "~/.jiuwenswarm/agent/workspace/skills")
-    project_dir = os.environ.get("PROJECT_DIR",   "~/.jiuwenswarm/agent/workspace")
-    oracle_dir  = os.environ.get("ORACLE_DIR",    "~/.jiuwenswarm/agent/workspace/oracle")
+    skills_dir  = os.path.expanduser(os.environ.get("SKILLS_DIR",  "~/.jiuwenswarm/agent/workspace/skills"))
+    project_dir = os.path.expanduser(os.environ.get("PROJECT_DIR", "~/.jiuwenswarm/agent/workspace"))
+    oracle_dir  = os.path.expanduser(os.environ.get("ORACLE_DIR",  "~/.jiuwenswarm/agent/workspace/oracle"))
     model       = os.environ.get("MODEL",          "deepseek-v4-flash")
     api_key     = os.environ.get("OPENAI_API_KEY", os.environ.get("API_KEY", "sk-30b1b0d13d7a467bb30516be6a0dda8f"))
     api_base    = os.environ.get("API_BASE",       "https://api.deepseek.com")

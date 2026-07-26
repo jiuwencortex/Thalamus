@@ -28,7 +28,7 @@ from pathlib import Path
 
 
 def main() -> None:
-    oracle_dir   = os.environ.get("ORACLE_DIR",    "~/.jiuwenswarm/agent/workspace/oracle")
+    oracle_dir   = os.path.expanduser(os.environ.get("ORACLE_DIR",    "~/.jiuwenswarm/agent/workspace/oracle"))
     turn_log_dir = os.environ.get("TURN_LOG_DIR",  os.path.join(oracle_dir, "online_logs"))
     model_dir    = os.environ.get("MODEL_DIR",     os.path.join(oracle_dir, "set_quality_model"))
     min_turns    = os.environ.get("MIN_TURNS",     "50")

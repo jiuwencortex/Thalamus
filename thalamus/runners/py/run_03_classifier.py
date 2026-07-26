@@ -19,7 +19,7 @@ import sys
 
 
 def main() -> None:
-    oracle_dir = os.environ.get("ORACLE_DIR",        "~/.jiuwenswarm/agent/workspace/oracle")
+    oracle_dir = os.path.expanduser(os.environ.get("ORACLE_DIR",        "~/.jiuwenswarm/agent/workspace/oracle"))
     log_dir    = os.environ.get("LOG_DIR",           os.path.join(oracle_dir, "online_logs"))
     min_turns  = os.environ.get("MIN_TURNS",         "10")
     max_weeks  = os.environ.get("MAX_WEEKS",         "8")

@@ -18,7 +18,7 @@ import sys
 
 
 def main() -> None:
-    oracle_dir = os.environ.get("ORACLE_DIR", "~/.jiuwenswarm/agent/workspace/oracle")
+    oracle_dir = os.path.expanduser(os.environ.get("ORACLE_DIR", "~/.jiuwenswarm/agent/workspace/oracle"))
     query      = os.environ.get("QUERY",      "Set up a CI pipeline for my new microservice")
     budget     = os.environ.get("BUDGET",     "auto")
     ordering   = os.environ.get("ORDERING",   "bookend")

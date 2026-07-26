@@ -64,6 +64,9 @@ class Config:
     )
 
     def __post_init__(self) -> None:
+        self.oracle_dir = os.path.expanduser(self.oracle_dir)
+        if self.new_oracle_dir:
+            self.new_oracle_dir = os.path.expanduser(self.new_oracle_dir)
         if not self.results_dir:
             self.results_dir = os.environ.get(
                 "RESULTS_DIR", os.path.join(self.oracle_dir, "research_results")
