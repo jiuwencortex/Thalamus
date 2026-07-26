@@ -75,8 +75,6 @@ def resolve_tool_dirs() -> list[str]:
     elif tools_dir_env:
         print(f"  [tools] WARNING: TOOLS_DIR set but not found: {tools_dir_env}", file=sys.stderr)
 
-    import sys
-    print("sys.path = ", sys.path)
     # Strategy 2 — importlib probe
     if not dirs:
         for mod, label in [
@@ -115,6 +113,84 @@ def resolve_tool_dirs() -> list[str]:
     return dirs
 
 
+# ── Repair helpers ───────────────────────────────────────────────────────────
+
+# Map matrix filename pattern → state file
+_MATRIX_STATE_MAP = [
+    ("scoring_matrix_skill_", "matrix_state_skills.json"),
+    ("scoring_matrix_mem_",   "matrix_state_memory.json"),
+    ("scoring_matrix_tool_",  "matrix_state_tools.json"),
+]
+
+
+def repair_empty_matrices(oracle_dir: Path) -> int:
+    """Remove empty (zero-row) scoring matrices and their state entries.
+
+    Scans oracle_dir for scoring_matrix_*.json files whose baseline_cross_eval
+    list is empty.  For each such file:
+      - Removes the component's entry from the corresponding state file.
+      - Deletes the empty matrix file.
+
+    This allows the next scoring run to re-score only the failed components
+    without forcing a full re-score of all others.
+
+    Returns the count of matrices repaired.
+    """
+    import json
+
+    repaired = 0
+    for matrix_path in sorted(oracle_dir.glob("scoring_matrix_*.json")):
+        try:
+            data = json.loads(matrix_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+
+        rows = data.get("baseline_cross_eval", [])
+        if rows:
+            continue  # healthy — leave alone
+
+        component_name = data.get("component_name") or data.get("skill_name") or matrix_path.stem
+        stem = matrix_path.name
+
+        # Determine which state file covers this matrix
+        state_file = None
+        for prefix, sf in _MATRIX_STATE_MAP:
+            if stem.startswith(prefix):
+                state_file = sf
+                break
+        if state_file is None:
+            continue
+
+        state_path = oracle_dir / state_file
+        state_updated = False
+        if state_path.exists():
+            try:
+                state_data = json.loads(state_path.read_text(encoding="utf-8"))
+                components = state_data.get("components", state_data.get("skills", {}))
+                if component_name in components:
+                    del components[component_name]
+                    # Write back (normalize to "components" key)
+                    state_data["components"] = components
+                    state_data.pop("skills", None)
+                    state_path.write_text(
+                        json.dumps(state_data, indent=2, ensure_ascii=False),
+                        encoding="utf-8",
+                    )
+                    state_updated = True
+            except (json.JSONDecodeError, OSError):
+                pass
+
+        matrix_path.unlink()
+        repaired += 1
+        print(
+            f"  REPAIR: deleted empty matrix {matrix_path.name}"
+            + (f" + removed from {state_file}" if state_updated else ""),
+            flush=True,
+        )
+
+    return repaired
+
+
 # ── Runner ───────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -130,6 +206,14 @@ def main() -> None:
     if not api_key:
         print("ERROR: Set OPENAI_API_KEY before running.", file=sys.stderr)
         sys.exit(1)
+
+    # Auto-repair: delete empty matrix files and clear their state entries
+    # so they are re-scored this run without touching healthy components.
+    n_repaired = repair_empty_matrices(Path(oracle_dir))
+    if n_repaired:
+        print(f"  Repaired {n_repaired} empty matrix file(s); they will be re-scored now.")
+    else:
+        print("  No empty matrix files found (nothing to repair).")
 
     tool_dirs = resolve_tool_dirs()
 
