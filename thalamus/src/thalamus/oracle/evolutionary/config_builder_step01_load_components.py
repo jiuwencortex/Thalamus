@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -31,18 +32,29 @@ class ComponentsLoader:
         example_texts_map: dict[str, list[str]] = {}
         n_failed = 0
 
-        for glob_pat, ctype in _PATTERN_MAP:
-            for path in sorted(self._oracle_dir.glob(glob_pat)):
-                result = self._load_one(path, ctype)
-                if result is None:
-                    n_failed += 1
-                    continue
-                comp, texts = result
-                components.append(comp)
-                example_texts_map[comp.name] = texts
+        all_paths = [
+            (path, ctype)
+            for glob_pat, ctype in _PATTERN_MAP
+            for path in sorted(self._oracle_dir.glob(glob_pat))
+        ]
+        n_total = len(all_paths)
+        print(f"  Loading {n_total} scoring matrix file(s) from {self._oracle_dir}...", flush=True)
+
+        for path, ctype in all_paths:
+            result = self._load_one(path, ctype)
+            if result is None:
+                n_failed += 1
+                continue
+            comp, texts = result
+            components.append(comp)
+            example_texts_map[comp.name] = texts
 
         if n_failed:
-            logger.warning("%d matrix file(s) failed to load and were skipped", n_failed)
+            print(
+                f"  WARNING: {n_failed} matrix file(s) skipped (see details above). "
+                f"Delete those files and re-run run_01_score.py to regenerate them.",
+                file=sys.stderr,
+            )
 
         return components, example_texts_map
 
@@ -52,12 +64,22 @@ class ComponentsLoader:
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError) as e:
-            logger.warning("Skipping %s: %s", path.name, e)
+            print(f"  SKIP {path.name}: {e}", file=sys.stderr)
             return None
 
         rows = data.get("baseline_cross_eval", [])
         if not rows:
-            logger.warning("Skipping %s: no baseline_cross_eval rows", path.name)
+            state_file = (
+                "matrix_state_tools.json" if "_tool_" in path.name else
+                "matrix_state_skills.json" if "_skill_" in path.name else
+                "matrix_state_memory.json"
+            )
+            print(
+                f"  SKIP {path.name}: evaluation rows are empty.\n"
+                f"       Fix: delete {path.name} and {state_file} from the oracle "
+                f"directory, then re-run run_01_score.py to force re-scoring.",
+                file=sys.stderr,
+            )
             return None
 
         f1_scores = [r["scores"].get("f1", 0.0) for r in rows if "scores" in r]

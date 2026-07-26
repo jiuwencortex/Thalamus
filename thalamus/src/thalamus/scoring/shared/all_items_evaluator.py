@@ -68,6 +68,9 @@ class AllItemsEvaluator:
 
         Returns {component_name: ComponentState} and total LLM call count.
         """
+        n_total = len(gen_results)
+        print(f"  Scoring {n_total} {self._component_type}(s)...", flush=True)
+
         all_pairs = self._collect_all_pairs(gen_results)
         sem = asyncio.Semaphore(self._max_parallel)
 
@@ -77,7 +80,8 @@ class AllItemsEvaluator:
         new_states: dict[str, ComponentState] = {}
         llm_calls = len(gen_results)
 
-        for component, pairs in gen_results:
+        for i, (component, pairs) in enumerate(gen_results, 1):
+            print(f"  [{i}/{n_total}] {component.name} ...", end="", flush=True)
             eval_pairs = all_pairs if self._cross_eval else pairs
             rows = await self._single.evaluate_component(
                 component.body,
@@ -85,8 +89,19 @@ class AllItemsEvaluator:
                 sem,
                 all_component_bodies=all_component_bodies if self._eval_combination_size > 1 else None,
             )
-            self._write_matrix_file(component.name, rows)
             llm_calls += len(eval_pairs)
+
+            if not rows:
+                safe = re.sub(r"[^\w-]", "_", component.name)
+                print(" FAILED — 0 evaluation rows; matrix file not written", flush=True)
+                logger.warning(
+                    "component=%s: evaluation returned 0 rows; matrix file skipped "
+                    "(delete any stale scoring_matrix_%s%s.json and re-run scoring to fix)",
+                    component.name, self._file_prefix, safe,
+                )
+                continue
+
+            self._write_matrix_file(component.name, rows)
 
             # Mean score over ALL configured metrics (not just f1)
             mean_score = _mean_over_metrics(rows, self._metrics)
@@ -96,6 +111,7 @@ class AllItemsEvaluator:
                 built_at=now_iso(),
                 mean_score=round(mean_score, 4),
             )
+            print(f" mean={mean_score:.3f}  rows={len(rows)}", flush=True)
             logger.info(
                 "component=%s: wrote %d rows, mean_score=%.3f (metrics=%s)",
                 component.name, len(rows), mean_score, ",".join(self._metrics),
