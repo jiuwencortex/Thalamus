@@ -8,9 +8,9 @@ from pathlib import Path
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 
-from _shared.outcome_scorer import compute_outcome_quality
-from _shared.turn_logger import TurnLogger
-from _shared.classifier_model import ComponentInclusionClassifier
+from ..._shared.outcome_scorer import compute_outcome_quality
+from ..._shared.turn_logger import TurnLogger
+from ..._shared.classifier_model import ComponentInclusionClassifier
 
 logger = logging.getLogger(__name__)
 

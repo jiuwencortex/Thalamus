@@ -19,7 +19,7 @@ from pathlib import Path
 from .rebuild_recommendation import RebuildRecommendation
 from .staleness_checker import load_staleness_status
 from .distribution_monitor import load_drift_status
-from _shared.turn_logger import TurnLogger
+from ..._shared.turn_logger import TurnLogger
 
 logger = logging.getLogger(__name__)
 

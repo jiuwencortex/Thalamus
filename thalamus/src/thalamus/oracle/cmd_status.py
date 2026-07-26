@@ -1,4 +1,4 @@
 # oracle_builder/cmd_status.py
-from oracle.rebuild_recommender.cmd_staleness_status import _cmd_status
+from .rebuild_recommender.cmd_staleness_status import _cmd_status
 
 __all__ = ["_cmd_status"]

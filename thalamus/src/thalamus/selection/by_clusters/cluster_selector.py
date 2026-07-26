@@ -6,8 +6,8 @@ import json
 import logging
 from pathlib import Path
 
-from _shared.query_clusterer import QueryClusterer
-from _shared.context_orderer import bookend_order
+from ..._shared.query_clusterer import QueryClusterer
+from ..._shared.context_orderer import bookend_order
 
 logger = logging.getLogger(__name__)
 

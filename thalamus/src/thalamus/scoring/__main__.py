@@ -20,6 +20,6 @@
 # python -m thalamus.scoring build --skills-dir ~/.jiuwenswarm/skills --project-dir ~/.jiuwenswarm --tools-config ~/.jiuwenswarm/tool_definitions.yaml --matrix-dir ~/.jiuwenswarm/oracle --model gpt-4o-mini --api-key $KEY
 # python -m thalamus.scoring build --skills-dir C:\Users\m00645993\.jiuwenswarm\agent\workspace\skills --project-dir C:\Users\m00645993\.jiuwenswarm\agent\workspace --tools-config ~/.jiuwenswarm/tool_definitions.yaml --matrix-dir C:\Users\m00645993\.jiuwenswarm\agent\workspace\oracle --model "kimi-k2.6" --api-key "sk-s89oB4Ni1ZQjnDyN5_ZDkA" --api-base "https://litellm.toga-ai.toganetworks.com/v1" --n-examples 20
 
-from scoring.cli import main
+from .cli import main
 
 main()

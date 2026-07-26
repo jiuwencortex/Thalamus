@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 
 from .component_info import ComponentInfo
-from _shared.query_clusterer import QueryClusterer
+from ..._shared.query_clusterer import QueryClusterer
 
 
 class ClusterCentroidsComputer:

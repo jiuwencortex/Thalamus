@@ -3,7 +3,7 @@
 # Supports TF-IDF (default) and sentence-transformer backends.
 from __future__ import annotations
 
-from _shared.query_clusterer import QueryClusterer
+from ..._shared.query_clusterer import QueryClusterer
 
 
 class ClusterFitter:

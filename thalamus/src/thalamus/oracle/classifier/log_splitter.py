@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from _shared.turn_logger import TurnLogger
+from ..._shared.turn_logger import TurnLogger
 
 
 class LogSplitter:

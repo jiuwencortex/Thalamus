@@ -17,6 +17,6 @@
 #       --oracle-dir ~/.jiuwenswarm/oracle \
 #       --embedding ./query.npy --threshold 0.5 --verbose
 
-from selection.cli import main
+from .cli import main
 
 main()

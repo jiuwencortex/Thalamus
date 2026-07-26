@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 
-from _shared.classifier_model import ComponentInclusionClassifier
+from ..._shared.classifier_model import ComponentInclusionClassifier
 
 logger = logging.getLogger(__name__)
 

@@ -9,9 +9,9 @@ from pathlib import Path
 
 import numpy as np
 
-from _shared import compute_outcome_quality
-from _shared import TurnLogger
-from _shared import QueryClusterer
+from ..._shared import compute_outcome_quality
+from ..._shared import TurnLogger
+from ..._shared import QueryClusterer
 
 logger = logging.getLogger(__name__)
 

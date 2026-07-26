@@ -13,8 +13,8 @@ import numpy as np
 from ..classifier.component_classifier_trainer import ComponentClassifierTrainer
 from ..classifier.classifier_evaluator import ClassifierEvaluator, _component_included, _f1, _precision, _recall
 from ..classifier.log_splitter import LogSplitter
-from _shared.classifier_model import ComponentInclusionClassifier
-from _shared.outcome_scorer import compute_outcome_quality
+from ..._shared.classifier_model import ComponentInclusionClassifier
+from ..._shared.outcome_scorer import compute_outcome_quality
 
 logger = logging.getLogger(__name__)
 

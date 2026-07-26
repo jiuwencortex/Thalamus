@@ -31,7 +31,10 @@ from pathlib import Path
 # ── Tool directory discovery ─────────────────────────────────────────────────
 
 def _probe_importlib(module_name: str) -> str | None:
-    spec = importlib.util.find_spec(module_name)
+    try:
+        spec = importlib.util.find_spec(module_name)
+    except (ModuleNotFoundError, ValueError):
+        return None
     if spec is None:
         return None
     locs = getattr(spec, "submodule_search_locations", None)
@@ -72,6 +75,8 @@ def resolve_tool_dirs() -> list[str]:
     elif tools_dir_env:
         print(f"  [tools] WARNING: TOOLS_DIR set but not found: {tools_dir_env}", file=sys.stderr)
 
+    import sys
+    print("sys.path = ", sys.path)
     # Strategy 2 — importlib probe
     if not dirs:
         for mod, label in [
@@ -116,9 +121,9 @@ def main() -> None:
     skills_dir  = os.environ.get("SKILLS_DIR",    "~/.jiuwenswarm/agent/workspace/skills")
     project_dir = os.environ.get("PROJECT_DIR",   "~/.jiuwenswarm/agent/workspace")
     oracle_dir  = os.environ.get("ORACLE_DIR",    "~/.jiuwenswarm/agent/workspace/oracle")
-    model       = os.environ.get("MODEL",          "gpt-4o-mini")
-    api_key     = os.environ.get("OPENAI_API_KEY", os.environ.get("API_KEY", ""))
-    api_base    = os.environ.get("API_BASE",       "https://api.openai.com/v1")
+    model       = os.environ.get("MODEL",          "deepseek-v4-flash")
+    api_key     = os.environ.get("OPENAI_API_KEY", os.environ.get("API_KEY", "sk-30b1b0d13d7a467bb30516be6a0dda8f"))
+    api_base    = os.environ.get("API_BASE",       "https://api.deepseek.com")
     n_examples  = os.environ.get("N_EXAMPLES",    "20")
     parallel    = os.environ.get("PARALLEL",       "5")
 

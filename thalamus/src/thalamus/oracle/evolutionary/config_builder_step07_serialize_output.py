@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from _shared.query_clusterer import QueryClusterer
+from ..._shared.query_clusterer import QueryClusterer
 
 
 class OutputSerializer:

@@ -14,6 +14,6 @@
 
 #python -m thalamus.scoring build --type tools --tools-dir C:\Workspace\openjiuwen\agent-core\openjiuwen\harness\tools --tools-dir C:\Workspace\openjiuwen\jiuwenswarm\jiuwenswarm\agents\harness\common\tools  --matrix-dir C:\Users\m00645993\.jiuwenswarm\agent\workspace\oracle --model gpt-4o-mini --api-key $KEY
 
-from oracle.cli import main
+from .cli import main
 
 main()
