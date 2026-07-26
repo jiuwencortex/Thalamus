@@ -16,10 +16,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ── Shared config (override via env vars before running) ─────────────────────
-export SKILLS_DIR="${SKILLS_DIR:-~/.jiuwenswarm/agent/workspace/skills}"
-export PROJECT_DIR="${PROJECT_DIR:-~/.jiuwenswarm/agent/workspace}"
-export TOOLS_DIR="${TOOLS_DIR:-~/.jiuwenswarm/agent/workspace/tools}"
-export ORACLE_DIR="${ORACLE_DIR:-~/.jiuwenswarm/agent/workspace/oracle}"
+export SKILLS_DIR="${SKILLS_DIR:-$HOME/.jiuwenswarm/agent/workspace/skills}"
+export PROJECT_DIR="${PROJECT_DIR:-$HOME/.jiuwenswarm/agent/workspace}"
+export TOOLS_DIR="${TOOLS_DIR:-$HOME/.jiuwenswarm/agent/workspace/tools}"
+export ORACLE_DIR="${ORACLE_DIR:-$HOME/.jiuwenswarm/agent/workspace/oracle}"
 export MODEL="${MODEL:-gpt-4o-mini}"
 # OPENAI_API_KEY must be set in your environment
 

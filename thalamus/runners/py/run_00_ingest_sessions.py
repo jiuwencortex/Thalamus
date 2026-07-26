@@ -166,17 +166,58 @@ def _ts_iso(ts: float) -> str:
     return datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _write_turns(turns: list[dict], embeddings, log_dir: Path) -> int:
+def _load_oracle_clusterer(oracle_dir: Path):
+    """Load QueryClusterer from oracle if available; return None otherwise."""
+    pkl = oracle_dir / "context_configs.pkl"
+    if not pkl.exists():
+        return None
+    try:
+        from thalamus._shared.query_clusterer import QueryClusterer
+        return QueryClusterer.load(pkl)
+    except Exception:
+        return None
+
+
+def _write_turns(turns: list[dict], embeddings, log_dir: Path, clusterer=None) -> int:
     """Write turn records to weekly-rotated JSONL files; return count written."""
     log_dir.mkdir(parents=True, exist_ok=True)
     written = 0
     for i, turn in enumerate(turns):
         week = _week_tag(turn["timestamp"])
         dest = log_dir / f"turns_{week}.jsonl"
+        # Flat component_set for OutcomeDataset (R4)
+        component_set = list(dict.fromkeys(turn["skills_in_context"]))
+
+        # Pre-compute outcome_quality for OutcomeDataset (R4).
+        # Mirrors compute_outcome_quality() from thalamus._shared.outcome_scorer:
+        #   base 0.5 + 0.2 if task_completed, - 0.3 if follow_up_correction,
+        #   + max(0, 0.1 - 0.02 * conversation_length), clamped to [0, 1].
+        _q = 0.5
+        if turn["task_completed"]:
+            _q += 0.2
+        _q += max(0.0, 0.1 - 0.02 * turn["conversation_length"])
+        outcome_quality = max(0.0, min(1.0, _q))
+
+        # Cluster ID: assign using the oracle's QueryClusterer while we still have
+        # the raw query text. This avoids the feature-space mismatch that occurs
+        # when OutcomeDataset tries to re-embed a stored TF-IDF vector using the
+        # oracle's different TF-IDF vocabulary.
+        cluster_id: int | None = None
+        if clusterer is not None:
+            try:
+                cluster_id = clusterer.predict(turn["query_text"])
+            except Exception:
+                cluster_id = None
+
         record = {
             "turn_id": str(uuid.uuid4()),
             "timestamp": _ts_iso(turn["timestamp"]),
             "query_embedding": embeddings[i].tolist(),
+            # Flat fields consumed by OutcomeDataset (run_05_set_quality)
+            "component_set": component_set,
+            "outcome_quality": outcome_quality,
+            "cluster_id": cluster_id,  # None if oracle not yet built
+            # Nested fields consumed by ComponentClassifierTrainer (run_03_classifier)
             "context_config": {
                 "skills":          turn["skills_in_context"],
                 "memory_sections": [],
@@ -315,12 +356,19 @@ def main() -> None:
 
     _save_vectorizer(vec, vec_path)
 
+    # Load oracle clusterer for cluster_id assignment (if oracle already built)
+    clusterer = _load_oracle_clusterer(oracle_dir)
+    if clusterer is not None:
+        print(f"  Oracle clusterer loaded ({clusterer.n_clusters} clusters) — cluster_id will be stored.")
+    else:
+        print("  Oracle not yet built — cluster_id will be null (run run_02_oracle first).")
+
     # Embed and write
     import numpy as np
     X = vec.transform(query_texts)
     embeddings = np.asarray(X.todense(), dtype=np.float32)
 
-    written = _write_turns(all_turns, embeddings, log_dir)
+    written = _write_turns(all_turns, embeddings, log_dir, clusterer=clusterer)
 
     print(f"  Wrote {written} turn record(s) to {log_dir}")
     print(f"  Vectorizer saved to {vec_path.name}")

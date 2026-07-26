@@ -14,8 +14,8 @@
 
 set -euo pipefail
 
-SESSIONS_DIR="${SESSIONS_DIR:-~/.jiuwenswarm/agent/sessions}"
-ORACLE_DIR="${ORACLE_DIR:-~/.jiuwenswarm/agent/workspace/oracle}"
+SESSIONS_DIR="${SESSIONS_DIR:-$HOME/.jiuwenswarm/agent/sessions}"
+ORACLE_DIR="${ORACLE_DIR:-$HOME/.jiuwenswarm/agent/workspace/oracle}"
 LOG_DIR="${LOG_DIR:-$ORACLE_DIR/online_logs}"
 MAX_FEATURES="${MAX_FEATURES:-2000}"
 FORCE="${FORCE:-0}"

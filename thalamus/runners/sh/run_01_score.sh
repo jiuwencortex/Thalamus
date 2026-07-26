@@ -27,9 +27,9 @@
 set -euo pipefail
 
 # ── Configure these paths ────────────────────────────────────────────────────
-SKILLS_DIR="${SKILLS_DIR:-~/.jiuwenswarm/agent/workspace/skills}"
-PROJECT_DIR="${PROJECT_DIR:-~/.jiuwenswarm/agent/workspace}"
-ORACLE_DIR="${ORACLE_DIR:-~/.jiuwenswarm/agent/workspace/oracle}"
+SKILLS_DIR="${SKILLS_DIR:-$HOME/.jiuwenswarm/agent/workspace/skills}"
+PROJECT_DIR="${PROJECT_DIR:-$HOME/.jiuwenswarm/agent/workspace}"
+ORACLE_DIR="${ORACLE_DIR:-$HOME/.jiuwenswarm/agent/workspace/oracle}"
 
 # Explicit tool source overrides (leave unset for auto-discovery)
 AGENT_CORE_DIR="${AGENT_CORE_DIR:-}"

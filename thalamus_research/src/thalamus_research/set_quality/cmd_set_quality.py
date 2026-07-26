@@ -86,6 +86,13 @@ def _run_train(
     if len(ds) == 0:
         logger.error("No outcome records found. Cannot train.")
         sys.exit(1)
+    if len(ds) < 2:
+        logger.error(
+            "Only %d outcome record(s) found — need at least 2 to train "
+            "(recommend ≥ 20). Collect more agent turns with non-empty "
+            "component_set and re-run.", len(ds)
+        )
+        sys.exit(1)
 
     # Load catalog (needed for feature extraction)
     try:

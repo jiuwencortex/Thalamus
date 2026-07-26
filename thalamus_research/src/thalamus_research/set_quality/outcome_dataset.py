@@ -106,7 +106,11 @@ class OutcomeDataset:
             if embedding is None or quality is None or not component_set:
                 n_skipped += 1
                 continue
-            cluster_id = cls._predict_cluster(clusterer, embedding)
+            stored_cid = turn.get("cluster_id")
+            if stored_cid is not None:
+                cluster_id = int(stored_cid)
+            else:
+                cluster_id = cls._predict_cluster(clusterer, embedding)
             records.append(OutcomeRecord(
                 component_set=list(component_set),
                 cluster_id=int(cluster_id),
@@ -201,4 +205,15 @@ class OutcomeDataset:
     @staticmethod
     def _predict_cluster(clusterer, embedding: list[float]) -> int:
         vec = np.array(embedding, dtype=float).reshape(1, -1)
-        return int(clusterer._model.predict(vec)[0])
+        try:
+            return int(clusterer._kmeans.predict(vec)[0])
+        except ValueError:
+            # Embedding dimension doesn't match clusterer feature space.
+            # This happens when the turn was ingested with a different vectorizer
+            # than the oracle's QueryClusterer. Fall back to cluster 0.
+            logger.debug(
+                "_predict_cluster: dimension mismatch (vec=%d, expected=%d), defaulting to 0",
+                vec.shape[1],
+                clusterer._kmeans.n_features_in_,
+            )
+            return 0

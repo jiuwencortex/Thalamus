@@ -105,9 +105,11 @@ class BenchmarkRunner:
             n_repeats=n_repeats,
         )
 
-        # Normalize queries
+        # Normalize queries — accept both plain strings and {"query": ...} dicts
         norm_queries = [
             {"id": q.get("id", f"q{i:03d}"), "query": q["query"]}
+            if isinstance(q, dict)
+            else {"id": f"q{i:03d}", "query": q}
             for i, q in enumerate(queries)
         ]
 

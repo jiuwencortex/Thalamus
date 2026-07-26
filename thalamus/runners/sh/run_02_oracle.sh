@@ -13,7 +13,7 @@
 set -euo pipefail
 
 # ── Configure ────────────────────────────────────────────────────────────────
-ORACLE_DIR="${ORACLE_DIR:-~/.jiuwenswarm/agent/workspace/oracle}"
+ORACLE_DIR="${ORACLE_DIR:-$HOME/.jiuwenswarm/agent/workspace/oracle}"
 
 # Clustering
 EMBEDDER="${EMBEDDER:-tfidf}"         # tfidf | sentence

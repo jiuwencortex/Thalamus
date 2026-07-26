@@ -13,7 +13,7 @@
 set -euo pipefail
 
 # ── Configure ────────────────────────────────────────────────────────────────
-ORACLE_DIR="${ORACLE_DIR:-~/.jiuwenswarm/agent/workspace/oracle}"
+ORACLE_DIR="${ORACLE_DIR:-$HOME/.jiuwenswarm/agent/workspace/oracle}"
 QUERY="${QUERY:-Set up a CI pipeline for my new microservice}"
 BUDGET="${BUDGET:-auto}"            # small | medium | large | auto
 ORDERING="${ORDERING:-bookend}"     # relevance | bookend | none

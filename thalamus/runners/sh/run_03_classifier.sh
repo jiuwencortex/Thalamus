@@ -13,7 +13,7 @@
 set -euo pipefail
 
 # ── Configure ────────────────────────────────────────────────────────────────
-ORACLE_DIR="${ORACLE_DIR:-~/.jiuwenswarm/agent/workspace/oracle}"
+ORACLE_DIR="${ORACLE_DIR:-$HOME/.jiuwenswarm/agent/workspace/oracle}"
 LOG_DIR="${LOG_DIR:-$ORACLE_DIR/online_logs}"
 MIN_TURNS="${MIN_TURNS:-10}"
 MAX_WEEKS="${MAX_WEEKS:-8}"
