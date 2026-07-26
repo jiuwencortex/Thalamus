@@ -10,8 +10,8 @@ Structure
     ├── ablations/       R2 ✓ — TopKSelector, NoBookendSelector, SingleBudgetSelector, PathBOnlySelector
     ├── cross_path/      R3a ✓ — CoInclusionExtractor, FitnessAugmentor
     ├── bandit/          R3b ✓ — ExplorationRateEstimator, ConvergenceAnalyzer
-    ├── set_quality/     R4 — set-level quality model (XGB / joint classifier as GA fitness)
-    └── meta_learning/   R5 — cross-deployment warm-start from shared knowledge base
+    ├── set_quality/     R4 ✓ — OutcomeDataset, SetQualityModel, SetQualityFitness, InteractionFeatures
+    └── meta_learning/   R5 ✓ — KnowledgeBase, TransferInitializer, fingerprint_component
 
 CLI
 ---
@@ -24,4 +24,6 @@ Subcommands
 - ``ablation``        — run ablation study: TopK / NoBookend / SingleBudget / PathBOnly (R2)
 - ``cross-path``      — co-inclusion analysis + augmented fitness (R3a)
 - ``bandit``          — estimate ε* / measure Path B convergence (R3b)
+- ``set-quality``     — train / evaluate set-level quality model (R4)
+- ``meta-learning``   — extract KB from oracle or warm-start new deployment (R5)
 """

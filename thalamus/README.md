@@ -101,25 +101,25 @@ Set `TOOLS_DIR=none` to skip tool scoring entirely. Without any of these, tools 
 
 | Script | What it runs |
 |--------|--------------|
+| `runners/sh/run_00_ingest_sessions.sh` | Phase 0: ingest jiuwenswarm sessions → `online_logs/` |
 | `runners/sh/run_01_score.sh` | Phase 1–2: LLM scores all components |
 | `runners/sh/run_02_oracle.sh` | Phase 3: genetic algorithm builds `context_configs.json` |
 | `runners/sh/run_03_classifier.sh` | Phase 4: trains logistic regression from turn logs |
 | `runners/sh/run_04_select.sh` | Runtime: resolves a single query to a context config |
-| `runners/sh/run_05_r4_activate.sh` | R4: train XGB set-quality model + rebuild oracle (needs ~500 turns) |
-| `runners/sh/run_06_r5_meta_init.sh` | R5: extract KB from mature oracle + warm-start a new deployment |
 
 All scripts read from environment variables. See each script's header for the full list.
+
+R4 (set-quality model) and R5 (meta-learning warm-start) are research operations — run them via `thalamus_research/runners/sh/run_05_set_quality.sh` and `thalamus_research/runners/sh/run_06_meta_learning.sh` respectively.
 
 **Python runners (debug mode).** Each shell runner has a Python equivalent in `runners/py/` that imports and calls the CLI `main()` directly — no subprocess boundary, so breakpoints work anywhere in the call stack. Same env-var interface:
 
 | Script | What it runs |
 |--------|--------------|
+| `runners/py/run_00_ingest_sessions.py` | Phase 0: session ingestion |
 | `runners/py/run_01_score.py` | Phase 1–2: component scoring |
 | `runners/py/run_02_oracle.py` | Phase 3: evolutionary oracle |
 | `runners/py/run_03_classifier.py` | Phase 4: classifier training |
 | `runners/py/run_04_select.py` | Runtime: single query lookup |
-| `runners/py/run_05_r4_activate.py` | R4: XGB quality model + oracle rebuild |
-| `runners/py/run_06_r5_meta_init.py` | R5: KB extract + warm-start |
 | `runners/py/run_all.py` | Full pipeline (calls sub-runners directly) |
 
 ```bash
@@ -193,20 +193,18 @@ thalamus/                 ← sub-project root
   runners/
     sh/                     # Shell runners (production / CI)
       run_all.sh
-      run_01_score.sh       # Phase 1–2: component scoring
-      run_02_oracle.sh      # Phase 3: evolutionary oracle
-      run_03_classifier.sh  # Phase 4: classifier training
-      run_04_select.sh      # Runtime: single query lookup
-      run_05_r4_activate.sh # R4: XGB quality model + oracle rebuild
-      run_06_r5_meta_init.sh # R5: KB extract + warm-start
+      run_00_ingest_sessions.sh  # Phase 0: ingest jiuwenswarm sessions
+      run_01_score.sh            # Phase 1–2: component scoring
+      run_02_oracle.sh           # Phase 3: evolutionary oracle
+      run_03_classifier.sh       # Phase 4: classifier training
+      run_04_select.sh           # Runtime: single query lookup
     py/                     # Python runners (debug mode — no subprocess boundary)
       run_all.py
+      run_00_ingest_sessions.py
       run_01_score.py
       run_02_oracle.py
       run_03_classifier.py
       run_04_select.py
-      run_05_r4_activate.py
-      run_06_r5_meta_init.py
   tests/
     test_skill_discovery.py
     run_tests.py
@@ -264,4 +262,6 @@ After a full run:
   exploration_rate.json          # derived ε* per component (written by: tune --auto-exploration)
   online_logs/
     turns_YYYY-WNN.jsonl
+    ingestion_state.json   # tracks which sessions have been ingested (run_00)
+    ingestion_vectorizer.pkl  # TF-IDF vectorizer fitted on ingested queries (run_00)
 ```
