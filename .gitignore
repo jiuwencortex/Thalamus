@@ -18,6 +18,7 @@ __pycache__/
 # IDE
 .idea/
 .vscode/
+.idea/modules.xml
 
 # Oracle working directories (local data, not source code)
 # Uncomment if your oracle dirs are inside this repo:
