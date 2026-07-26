@@ -53,31 +53,41 @@ uv pip install -e ./thalamus_research
 export ORACLE_DIR=/path/to/oracle
 
 # R1: baseline comparison
-bash thalamus_research/runners/run_01_baselines.sh
+bash thalamus_research/runners/sh/run_01_baselines.sh
 
 # R2: ablation study
-bash thalamus_research/runners/run_02_ablation.sh
+bash thalamus_research/runners/sh/run_02_ablation.sh
 
 # R3a: co-inclusion analysis (requires trained classifier)
-bash thalamus_research/runners/run_03_cross_path.sh
+bash thalamus_research/runners/sh/run_03_cross_path.sh
 
 # R3b: exploration rate estimation
-bash thalamus_research/runners/run_04_bandit.sh
+bash thalamus_research/runners/sh/run_04_bandit.sh
 
 # R4: set-level quality model (requires turn logs with quality labels)
-bash thalamus_research/runners/run_05_set_quality.sh
+bash thalamus_research/runners/sh/run_05_set_quality.sh
 
 # R5: cross-deployment meta-learning (requires multiple deployments)
-KB_PATH=/shared/kb.json bash thalamus_research/runners/run_06_meta_learning.sh
+KB_PATH=/shared/kb.json bash thalamus_research/runners/sh/run_06_meta_learning.sh
 
 # All pre-data phases in sequence (R1 → R3b)
-bash thalamus_research/runners/run_all_experiments.sh
+bash thalamus_research/runners/sh/run_all_experiments.sh
 ```
 
-All runners read from `runners/_config.sh` defaults and accept env var overrides:
+All runners read from `runners/sh/_config.sh` defaults and accept env var overrides:
 
 ```bash
-ORACLE_DIR=/my/oracle QUERIES_FILE=/my/queries.json bash runners/run_01_baselines.sh
+ORACLE_DIR=/my/oracle QUERIES_FILE=/my/queries.json bash runners/sh/run_01_baselines.sh
+```
+
+**Python runners (debug mode).** Each shell runner has a Python equivalent in `runners/py/` that calls CLI `main()` directly — full call stack visible in the debugger. Shared config lives in `runners/py/_config.py` (same env-var names as `_config.sh`):
+
+```bash
+ORACLE_DIR=/path/to/oracle python thalamus_research/runners/py/run_01_baselines.py
+
+# MODE flag works the same as in the shell runner:
+MODE=convergence ORACLE_DIR=... python thalamus_research/runners/py/run_04_bandit.py
+MODE=both        ORACLE_DIR=... python thalamus_research/runners/py/run_05_set_quality.py
 ```
 
 ---
@@ -110,14 +120,24 @@ thalamus_research/        ← sub-project root
     thalamus_paper.md     # arXiv-style paper draft
     thalamus_slides.md    # Slide deck
   runners/
-    _config.sh            # Shared env-var defaults (sourced by all runners)
-    run_01_baselines.sh   # R1: baseline evaluation
-    run_02_ablation.sh    # R2: ablation study
-    run_03_cross_path.sh  # R3a: co-inclusion + fitness augmentation
-    run_04_bandit.sh      # R3b: ε* estimation + convergence
-    run_05_set_quality.sh # R4: train + evaluate quality model
-    run_06_meta_learning.sh # R5: KB extract + transfer
-    run_all_experiments.sh  # R1–R3b orchestrator
+    sh/                       # Shell runners (production / CI)
+      _config.sh              #   Shared env-var defaults (sourced by all runners)
+      run_all_experiments.sh  #   R1–R3b orchestrator
+      run_01_baselines.sh     #   R1: baseline evaluation
+      run_02_ablation.sh      #   R2: ablation study
+      run_03_cross_path.sh    #   R3a: co-inclusion + fitness augmentation
+      run_04_bandit.sh        #   R3b: ε* estimation + convergence
+      run_05_set_quality.sh   #   R4: train + evaluate quality model
+      run_06_meta_learning.sh #   R5: KB extract + transfer
+    py/                       # Python runners (debug mode — no subprocess boundary)
+      _config.py              #   Shared Config dataclass (same env-var names)
+      run_all_experiments.py  #   R1–R3b orchestrator
+      run_01_baselines.py
+      run_02_ablation.py
+      run_03_cross_path.py
+      run_04_bandit.py        #   MODE=estimate|convergence|both
+      run_05_set_quality.py   #   MODE=train|evaluate|both
+      run_06_meta_learning.py #   MODE=extract|transfer|both
   tests/                  # Research-specific tests (placeholder)
   src/
     thalamus_research/    ← importable Python package
