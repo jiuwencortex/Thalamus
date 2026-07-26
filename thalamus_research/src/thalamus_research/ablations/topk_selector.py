@@ -32,7 +32,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from thalamus._shared.context_orderer import bookend_order
-from baselines.component_catalog import ComponentCatalog, ComponentEntry
+from ..baselines.component_catalog import ComponentCatalog, ComponentEntry
 
 logger = logging.getLogger(__name__)
 

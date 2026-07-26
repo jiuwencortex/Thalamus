@@ -117,22 +117,22 @@ def cmd_eval(args: argparse.Namespace) -> None:
 
 def _load_selector(name: str, oracle_dir: Path, seed: int | None = None):
     if name == "thalamus":
-        from ..context_selectors import ContextSelector
+        from thalamus.selection import ContextSelector
         return ContextSelector.load(oracle_dir)
     elif name == "all":
-        from baselines import AllSelector
+        from ..baselines import AllSelector
         return AllSelector.load(oracle_dir)
     elif name == "random":
-        from baselines import RandomSelector
+        from ..baselines import RandomSelector
         return RandomSelector.load(oracle_dir, seed=seed)
     elif name == "tfidf":
-        from baselines import TFIDFSelector
+        from ..baselines import TFIDFSelector
         return TFIDFSelector.load(oracle_dir)
     elif name == "bm25":
-        from baselines import BM25Selector
+        from ..baselines import BM25Selector
         return BM25Selector.load(oracle_dir)
     elif name == "dense":
-        from baselines.dense_selector import DenseSelector
+        from ..baselines.dense_selector import DenseSelector
         return DenseSelector.load(oracle_dir)
     else:
         raise ValueError(f"Unknown selector: {name!r}")

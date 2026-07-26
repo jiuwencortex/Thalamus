@@ -29,7 +29,7 @@ _DEFAULT_ABLATIONS = ["topk", "no_bookend", "single_budget_med", "path_b_only"]
 def _load_selectors(oracle_dir: Path) -> dict:
     """Load the full ContextSelector plus all query-time ablation selectors."""
     from thalamus.selection import ContextSelector
-    from ablations import (
+    from . import (
         TopKSelector,
         NoBookendSelector,
         SingleBudgetSelector,
@@ -97,7 +97,7 @@ def run(args) -> None:  # noqa: ANN001
         logger.error("Failed to load selectors: %s", exc)
         sys.exit(1)
 
-    from evaluation import BenchmarkRunner, print_report
+    from ..evaluation import BenchmarkRunner, print_report
 
     runner = BenchmarkRunner(selectors, reference_selector="thalamus")
     run_result = runner.run(

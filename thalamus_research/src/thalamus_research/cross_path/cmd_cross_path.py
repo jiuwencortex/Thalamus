@@ -46,7 +46,7 @@ def run(args) -> None:  # noqa: ANN001
     lam: float = float(getattr(args, "lam", 0.2))
 
     try:
-        from cross_path.co_inclusion_extractor import CoInclusionExtractor
+        from .co_inclusion_extractor import CoInclusionExtractor
         extractor = CoInclusionExtractor.load(oracle_dir)
     except FileNotFoundError as exc:
         logger.error("%s", exc)
@@ -54,7 +54,7 @@ def run(args) -> None:  # noqa: ANN001
 
     if augment_configs:
         # Produce augmented context_configs.json
-        from cross_path.fitness_augmentor import FitnessAugmentor
+        from .fitness_augmentor import FitnessAugmentor
         import json as _json
 
         config_path = oracle_dir / "context_configs.json"

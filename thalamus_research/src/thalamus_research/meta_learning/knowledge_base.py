@@ -89,7 +89,7 @@ class KnowledgeBase:
         int — number of fingerprint entries updated/created.
         """
         from .component_fingerprint import fingerprint_catalog
-        from set_quality.outcome_dataset import OutcomeDataset
+        from ..set_quality.outcome_dataset import OutcomeDataset
 
         oracle_dir = Path(oracle_dir)
         fps = fingerprint_catalog(oracle_dir)

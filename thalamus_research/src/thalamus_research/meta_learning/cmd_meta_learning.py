@@ -60,7 +60,7 @@ def run(args) -> None:  # noqa: ANN001
 
 def _run_extract(oracle_dir: Path, kb_path: Path, out_path: Path | None) -> None:
     try:
-        from meta_learning.knowledge_base import KnowledgeBase
+        from .knowledge_base import KnowledgeBase
     except ImportError as exc:
         logger.error("Import error: %s", exc)
         sys.exit(1)
@@ -99,7 +99,7 @@ def _run_transfer(oracle_dir: Path, kb_path: Path, out_path: Path | None) -> Non
         sys.exit(1)
 
     try:
-        from meta_learning.transfer_initializer import TransferInitializer
+        from .transfer_initializer import TransferInitializer
     except ImportError as exc:
         logger.error("Import error: %s", exc)
         sys.exit(1)

@@ -65,9 +65,9 @@ def _run_train(
     out_path: Path | None,
 ) -> None:
     try:
-        from baselines.component_catalog import ComponentCatalog
-        from set_quality.outcome_dataset import OutcomeDataset
-        from set_quality.set_quality_model import SetQualityModel
+        from ..baselines.component_catalog import ComponentCatalog
+        from .outcome_dataset import OutcomeDataset
+        from .set_quality_model import SetQualityModel
     except ImportError as exc:
         logger.error("Import error: %s", exc)
         sys.exit(1)
@@ -129,9 +129,9 @@ def _run_evaluate(
     import numpy as np
 
     try:
-        from baselines.component_catalog import ComponentCatalog
-        from set_quality.outcome_dataset import OutcomeDataset
-        from set_quality.set_quality_model import SetQualityModel
+        from ..baselines.component_catalog import ComponentCatalog
+        from .outcome_dataset import OutcomeDataset
+        from .set_quality_model import SetQualityModel
     except ImportError as exc:
         logger.error("Import error: %s", exc)
         sys.exit(1)
@@ -199,7 +199,7 @@ def _run_evaluate(
 def _try_load_extractor(oracle_dir: Path):
     """Attempt to load CoInclusionExtractor; return None on failure."""
     try:
-        from cross_path.co_inclusion_extractor import CoInclusionExtractor
+        from ..cross_path.co_inclusion_extractor import CoInclusionExtractor
         return CoInclusionExtractor.load(oracle_dir)
     except Exception:
         logger.debug("CoInclusionExtractor not available; co-inclusion features set to 0")
